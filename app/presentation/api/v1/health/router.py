@@ -5,7 +5,7 @@ from fastapi import APIRouter, Response, status
 
 from app.infra.cache import redis_client as redis_module
 from app.infra.database import postgres as postgres_module
-from app.presentation.health.schemas import LivenessResponse, ReadinessResponse, StartupResponse
+from app.presentation.api.v1.health.schemas import LivenessResponse, ReadinessResponse, StartupResponse
 
 
 logger = structlog.get_logger(__name__)

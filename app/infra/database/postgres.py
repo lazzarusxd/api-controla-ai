@@ -1,13 +1,13 @@
-from typing import Any, Dict, List, Optional
+from uuid import UUID
+from contextlib import asynccontextmanager
+from typing import Any, AsyncIterator, Dict, List, Optional
 
 import asyncpg
-import structlog
 from pgvector.asyncpg import register_vector
 
+from app.config.logging_setup import logger
 from app.config.settings import ServiceSettings
 
-
-logger = structlog.get_logger(__name__)
 
 
 class PostgresPool:
@@ -17,7 +17,6 @@ class PostgresPool:
         self._pool: Optional[asyncpg.Pool] = None
 
     async def connect(self) -> None:
-        """Cria o pool. Idempotente."""
         if self._pool is not None:
             return
 
@@ -76,6 +75,13 @@ class PostgresPool:
     async def executemany(self, query: str, args_list: List[Dict[str, Any]]) -> None:
         async with self.pool.acquire() as connection:
             await connection.executemany(query, args_list)
+
+    @asynccontextmanager
+    async def tenant_transaction(self, partner_id: UUID) -> AsyncIterator[asyncpg.Connection]:
+        async with self.pool.acquire() as connection:
+            async with connection.transaction():
+                await connection.execute("SELECT set_config('app.partner_id', $1, true)", str(partner_id))
+                yield connection
 
     async def ping(self) -> bool:
         try:

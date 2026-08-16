@@ -5,6 +5,9 @@ x-app-common: &app-common
     context: .
     dockerfile: Dockerfile
     target: runtime
+    args:
+      APP_UID: ${APP_UID:-1000}
+      APP_GID: ${APP_GID:-1000}
   image: ${IMAGE_NAME:-controla-ai/api}:${IMAGE_TAG:-latest}
   env_file: [.env]
   volumes:

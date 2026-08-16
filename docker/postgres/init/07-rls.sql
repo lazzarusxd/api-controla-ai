@@ -25,7 +25,7 @@ BEGIN
     FOREACH target IN ARRAY ARRAY[
         'users', 'receipts', 'transactions', 'subscriptions', 'assets',
         'goals', 'tax_deductions', 'metering_logs', 'invoices',
-        'vector_embeddings', 'credentials', 'refresh_tokens'
+        'vector_embeddings'
     ]
     LOOP
         EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', target);

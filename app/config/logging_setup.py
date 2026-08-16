@@ -130,3 +130,6 @@ def configure_logging(service_settings: ServiceSettings) -> None:
             structlog.stdlib.ProcessorFormatter.wrap_for_formatter
         ]
     )
+
+
+logger = structlog.get_logger(__name__)
