@@ -4,7 +4,7 @@ import asyncpg
 import structlog
 from pgvector.asyncpg import register_vector
 
-from app.config.settings import Settings
+from app.config.settings import ServiceSettings
 
 
 logger = structlog.get_logger(__name__)
@@ -12,7 +12,7 @@ logger = structlog.get_logger(__name__)
 
 class PostgresPool:
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: ServiceSettings) -> None:
         self._settings = settings
         self._pool: Optional[asyncpg.Pool] = None
 
