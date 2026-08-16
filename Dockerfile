@@ -35,13 +35,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd --gid 1000 appuser \
-    && useradd --uid 1000 --gid appuser --create-home appuser
+ARG APP_UID=1000
+ARG APP_GID=1000
+
+RUN groupadd --gid ${APP_GID} appuser \
+    && useradd --uid ${APP_UID} --gid ${APP_GID} --create-home appuser
 
 COPY --from=builder /opt/venv /opt/venv
 
 WORKDIR /app
-COPY --chown=appuser:appuser . .
+COPY --chown=${APP_UID}:${APP_GID} . .
 
 USER appuser
 

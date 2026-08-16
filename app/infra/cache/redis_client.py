@@ -1,12 +1,9 @@
 from typing import Dict, Optional
 
-import structlog
 from redis.asyncio import ConnectionPool, Redis
 
+from app.config.logging_setup import logger
 from app.config.settings import ServiceSettings
-
-
-logger = structlog.get_logger(__name__)
 
 
 class RedisClient:

@@ -158,6 +158,19 @@ class ServiceSettings(BaseSettings):
         examples=["A256GCM"]
     )
 
+    JWE_ISSUER: str = Field(
+        default="https://api.controla.ai",
+        description="Emissor registrado na claim 'iss' do access token, conforme RFC 7519.",
+        examples=["https://api.controla.ai"]
+    )
+
+    JWE_AUDIENCE: str = Field(
+        default="controla-ai-api",
+        description="Destinatário registrado na claim 'aud'. Rejeitar tokens de outra audiência impede que "
+                    "um token emitido para outro serviço do mesmo domínio seja aceito aqui.",
+        examples=["controla-ai-api"]
+    )
+
     ACCESS_TOKEN_TTL_SECONDS: int = Field(
         default=900,
         ge=60,

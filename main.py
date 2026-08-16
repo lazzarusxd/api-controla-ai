@@ -6,11 +6,13 @@ from fastapi import FastAPI
 
 from app.infra.database.postgres import PostgresPool
 from app.infra.cache.redis_client import RedisClient
-from app.infra.logging.setup import configure_logging
+from app.config.logging_setup import configure_logging
 from app.infra.cache import redis_client as redis_module
 from app.infra.database import postgres as postgres_module
 from app.config.settings import ServiceSettings, get_settings
-from app.presentation.health.router import router as health_router
+from app.presentation.api.v1.router import router as api_router
+from app.presentation.errors.handlers import register_exception_handlers
+from app.presentation.api.v1.authentication.dependencies import bootstrap_security
 
 
 logger = structlog.get_logger(__name__)
@@ -27,6 +29,8 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
     redis_module.redis_client = RedisClient(service_settings)
     await redis_module.redis_client.connect()
+
+    bootstrap_security(service_settings)
 
     logger.info("application_started")
 
@@ -64,7 +68,9 @@ def create_app() -> FastAPI:
         }
     )
 
-    fastapi_app.include_router(health_router)
+    register_exception_handlers(fastapi_app)
+
+    fastapi_app.include_router(api_router)
 
     return fastapi_app
 
