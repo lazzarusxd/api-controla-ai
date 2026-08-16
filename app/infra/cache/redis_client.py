@@ -3,7 +3,7 @@ from typing import Dict, Optional
 import structlog
 from redis.asyncio import ConnectionPool, Redis
 
-from app.config.settings import Settings
+from app.config.settings import ServiceSettings
 
 
 logger = structlog.get_logger(__name__)
@@ -11,7 +11,7 @@ logger = structlog.get_logger(__name__)
 
 class RedisClient:
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: ServiceSettings) -> None:
         self._settings = settings
         self._clients: Dict[str, Redis] = {}
         self._pools: Dict[str, ConnectionPool] = {}

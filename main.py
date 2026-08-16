@@ -7,25 +7,25 @@ from fastapi import FastAPI
 from app.infra.database.postgres import PostgresPool
 from app.infra.cache.redis_client import RedisClient
 from app.infra.logging.setup import configure_logging
-from app.config.settings import Settings, get_settings
 from app.infra.cache import redis_client as redis_module
 from app.infra.database import postgres as postgres_module
+from app.config.settings import ServiceSettings, get_settings
 from app.presentation.health.router import router as health_router
 
 
 logger = structlog.get_logger(__name__)
 
+service_settings: ServiceSettings = get_settings()
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    settings: Settings = get_settings()
+    logger.info("application_starting", app=service_settings.APP_NAME, env=service_settings.APP_ENV)
 
-    logger.info("application_starting", app=settings.APP_NAME, env=settings.APP_ENV)
-
-    postgres_module.postgres_pool = PostgresPool(settings)
+    postgres_module.postgres_pool = PostgresPool(service_settings)
     await postgres_module.postgres_pool.connect()
 
-    redis_module.redis_client = RedisClient(settings)
+    redis_module.redis_client = RedisClient(service_settings)
     await redis_module.redis_client.connect()
 
     logger.info("application_started")
@@ -47,22 +47,24 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    settings = get_settings()
-
-    configure_logging(settings)
+    configure_logging(service_settings)
 
     fastapi_app = FastAPI(
         title="Controla AI",
         description="API de gestão financeira e patrimonial com ingestão automatizada de comprovantes.",
         version="0.1.0",
         lifespan=lifespan,
-        debug=settings.APP_DEBUG,
-        docs_url=None if settings.is_production else "/docs",
-        redoc_url=None if settings.is_production else "/redoc",
-        openapi_url=None if settings.is_production else "/openapi.json"
+        debug=service_settings.APP_DEBUG,
+        docs_url=None if service_settings.is_production else "/docs",
+        redoc_url=None if service_settings.is_production else "/redoc",
+        openapi_url=None if service_settings.is_production else "/openapi.json",
+        swagger_ui_parameters={
+            "deepLinking": True,
+            "defaultModelsExpandDepth": -1
+        }
     )
 
-    app.include_router(health_router)
+    fastapi_app.include_router(health_router)
 
     return fastapi_app
 
@@ -72,11 +74,9 @@ app = create_app()
 if __name__ == "__main__":
     import uvicorn
 
-    settings = get_settings()
-
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=settings.APP_PORT,
-        log_level=settings.LOG_LEVEL.lower()
+        port=service_settings.APP_PORT,
+        log_level=service_settings.LOG_LEVEL.lower()
     )

@@ -1,11 +1,11 @@
 from functools import lru_cache
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Annotated
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, SecretStr, ValidationInfo, field_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict, NoDecode
 
 
-class Settings(BaseSettings):
+class ServiceSettings(BaseSettings):
     """Configuração completa da API, carregada do ambiente."""
     APP_NAME: str = Field(
         default="api-controla-ai",
@@ -123,12 +123,16 @@ class Settings(BaseSettings):
         examples=[10485760]
     )
 
-    RECEIPT_ALLOWED_MIME: List[str] = Field(
-        default_factory=lambda: ["image/jpeg", "image/png", "application/pdf"],
-        description="Tipos MIME aceitos no upload. "
-                    "Aceita lista separada por vírgula na variável de ambiente.",
-        examples=[["image/jpeg", "image/png", "application/pdf"]]
-    )
+    RECEIPT_ALLOWED_MIME: Annotated[
+        List[str],
+        NoDecode,
+        Field(
+            default_factory=lambda: ["image/jpeg", "image/png", "application/pdf"],
+            description="Tipos MIME aceitos no upload. "
+                        "Aceita lista separada por vírgula na variável de ambiente.",
+            examples=[["image/jpeg", "image/png", "application/pdf"]]
+        )
+    ]
 
     JWE_PRIVATE_KEY_PATH: str = Field(
         default="/run/secrets/jwe_private.pem",
@@ -227,22 +231,21 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    @classmethod
+    # noinspection PyNestedDecorators
     @field_validator("RECEIPT_ALLOWED_MIME", mode="before")
+    @classmethod
     def _split_mime_list(cls, value: object) -> object:
         if isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
 
         return value
 
-    @classmethod
-    @field_validator("DATABASE_MAX_POOL_SIZE")
-    def _validate_pool_bounds(cls, value: int, info: ValidationInfo) -> int:
-        minimum = info.data.get("DATABASE_MIN_POOL_SIZE")
-        if minimum is not None and value < minimum:
+    @model_validator(mode="after")
+    def _validate_pool_bounds(self) -> "ServiceSettings":
+        if self.DATABASE_MAX_POOL_SIZE < self.DATABASE_MIN_POOL_SIZE:
             raise ValueError("DATABASE_MAX_POOL_SIZE não pode ser menor que DATABASE_MIN_POOL_SIZE")
 
-        return value
+        return self
 
     @property
     def is_production(self) -> bool:
@@ -250,5 +253,5 @@ class Settings(BaseSettings):
 
 
 @lru_cache(maxsize=1)
-def get_settings() -> Settings:
-    return Settings()  # type: ignore
+def get_settings() -> ServiceSettings:
+    return ServiceSettings()  # type: ignore

@@ -47,8 +47,9 @@ USER appuser
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -fsS http://localhost:8000/health/startup || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -fsS http://localhost:8000/health/liveness \
+        && curl -fsS http://localhost:8000/health/readiness || exit 1
 
 CMD ["sh", "-c", "exec gunicorn main:app \
      --worker-class uvicorn_worker.UvicornWorker \
