@@ -1,5 +1,6 @@
 from .partner import Partner
 from .credential import Credential
+from .transaction import Transaction
 from .refresh_token import RefreshToken
 
 
@@ -11,5 +12,8 @@ __all__ = [
     "Credential",
 
     # Refresh Token
-    "RefreshToken"
+    "RefreshToken",
+
+    # Transaction
+    "Transaction"
 ]

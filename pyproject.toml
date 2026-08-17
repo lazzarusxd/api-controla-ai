@@ -70,7 +70,9 @@ select = [
     "RUF",  # ruff-specific
 ]
 ignore = [
-    "S101",  # assert é legítimo em testes
+    "S101",   # assert é legítimo em testes
+    "UP006",  # typing.List/Dict/Tuple por convenção do projeto
+    "UP035",  # idem: imports de typing não são "deprecados" aqui
 ]
 
 [tool.ruff.lint.per-file-ignores]

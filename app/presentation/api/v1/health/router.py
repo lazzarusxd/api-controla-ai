@@ -17,6 +17,7 @@ _startup_completed = False
 
 @router.get(
     path="/liveness",
+    operation_id="liveness-check",
     response_model=LivenessResponse,
     summary="Verifica se o processo está vivo",
     description="Falha nesta sonda provoca reinício do container. Por isso não inspeciona dependências externas: uma "
@@ -34,6 +35,7 @@ async def liveness() -> LivenessResponse:
 
 @router.get(
     path="/startup",
+    operation_id="startup-check",
     response_model=StartupResponse,
     summary="Verifica se a inicialização foi concluída",
     description="Adia as demais sondas durante o boot. Após o primeiro sucesso o resultado é definitivo e o kubelet "
@@ -75,6 +77,7 @@ async def startup(response: Response) -> StartupResponse:
 
 @router.get(
     path="/readiness",
+    operation_id="readiness-check",
     response_model=ReadinessResponse,
     summary="Verifica se as dependências estão acessíveis",
     description="Falha nesta sonda remove a réplica do Service, sem reiniciá-la. É a única das três que executa "
