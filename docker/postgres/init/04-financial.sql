@@ -64,7 +64,7 @@ CREATE TABLE transactions (
     CONSTRAINT fk_transactions_user    FOREIGN KEY (partner_id, user_id) REFERENCES users (partner_id, user_id) ON DELETE CASCADE,
     CONSTRAINT fk_transactions_receipt FOREIGN KEY (partner_id, receipt_id) REFERENCES receipts (partner_id, receipt_id) ON DELETE SET NULL (receipt_id),
     CONSTRAINT ck_transactions_type    CHECK (type IN ('INCOME', 'EXPENSE')),
-    CONSTRAINT ck_transactions_status  CHECK (status IN ('PENDING', 'SETTLED', 'CANCELLED')),
+    CONSTRAINT ck_transactions_status  CHECK (status IN ('PENDING', 'SETTLED', 'CANCELED')),
     CONSTRAINT ck_transactions_amount  CHECK (amount > 0),
     CONSTRAINT ck_transactions_score   CHECK (confidence_score BETWEEN 0 AND 1),
     CONSTRAINT ck_transactions_review  CHECK (

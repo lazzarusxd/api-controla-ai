@@ -76,7 +76,7 @@ def get_session_issuer(
     )
 
 
-def get_authenticate_use_case(
+def get_authenticate_usecase(
         secret_hasher: Annotated[ISecretHasher, Depends(get_secret_hasher)],
         session_issuer_service: Annotated[SessionIssuerService, Depends(get_session_issuer)],
         credential_repository: Annotated[ICredentialRepository, Depends(get_credential_repository)]
@@ -88,7 +88,7 @@ def get_authenticate_use_case(
     )
 
 
-def get_refresh_use_case(
+def get_refresh_usecase(
         refresh_factory: Annotated[IRefreshTokenFactory, Depends(get_refresh_factory)],
         session_issuer_service: Annotated[SessionIssuerService, Depends(get_session_issuer)],
         credential_repository: Annotated[ICredentialRepository, Depends(get_credential_repository)],

@@ -1,21 +1,19 @@
 from typing import AsyncIterator
 from contextlib import asynccontextmanager
 
-import structlog
 from fastapi import FastAPI
 
 from app.infra.database.postgres import PostgresPool
 from app.infra.cache.redis_client import RedisClient
-from app.config.logging_setup import configure_logging
 from app.infra.cache import redis_client as redis_module
 from app.infra.database import postgres as postgres_module
 from app.config.settings import ServiceSettings, get_settings
+from app.config.logging_setup import configure_logging, logger
 from app.presentation.api.v1.router import router as api_router
+from app.presentation.errors.openapi import register_default_responses
 from app.presentation.errors.handlers import register_exception_handlers
 from app.presentation.api.v1.authentication.dependencies import bootstrap_security
 
-
-logger = structlog.get_logger(__name__)
 
 service_settings: ServiceSettings = get_settings()
 
@@ -71,6 +69,8 @@ def create_app() -> FastAPI:
     register_exception_handlers(fastapi_app)
 
     fastapi_app.include_router(api_router)
+
+    register_default_responses(fastapi_app, excluded_path_prefixes=["/health"])
 
     return fastapi_app
 

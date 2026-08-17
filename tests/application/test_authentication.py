@@ -131,13 +131,13 @@ async def test_autenticacao_valida_emite_par_de_tokens() -> None:
 
     refresh_repository = FakeRefreshTokenRepository()
 
-    use_case = AuthenticateClientUseCase(
+    usecase = AuthenticateClientUseCase(
         secret_hasher=FakeSecretHasher(matches=True),
         credential_repository=FakeCredentialRepository(_credential()),
         session_issuer_service=_session_issuer_service(refresh_repository)
     )
 
-    pair = await use_case.execute(ClientCredentialsRequestDTO(client_id=_client_id, client_secret="segredo"))
+    pair = await usecase.execute(ClientCredentialsRequestDTO(client_id=_client_id, client_secret="segredo"))
 
     assert pair.token_type is TokenType.BEARER
     assert pair.expires_in == 900
@@ -146,14 +146,14 @@ async def test_autenticacao_valida_emite_par_de_tokens() -> None:
 
 async def test_cliente_inexistente_executa_verificacao_dummy() -> None:
     hasher = FakeSecretHasher()
-    use_case = AuthenticateClientUseCase(
+    usecase = AuthenticateClientUseCase(
         secret_hasher=hasher,
         credential_repository=FakeCredentialRepository(None),
         session_issuer_service=_session_issuer_service(FakeRefreshTokenRepository())
     )
 
     with pytest.raises(InvalidClientError):
-        await use_case.execute(ClientCredentialsRequestDTO(client_id="inexistente", client_secret="segredo"))
+        await usecase.execute(ClientCredentialsRequestDTO(client_id="inexistente", client_secret="segredo"))
 
     assert hasher.dummy_calls == 1
 
@@ -165,14 +165,14 @@ async def test_cliente_inexistente_executa_verificacao_dummy() -> None:
 async def test_credencial_revogada_ou_parceiro_inativo_falha(is_revoked: bool, partner_is_active: bool) -> None:
     _client_id = "cli_teste"
 
-    use_case = AuthenticateClientUseCase(
+    usecase = AuthenticateClientUseCase(
         secret_hasher=FakeSecretHasher(matches=True),
         session_issuer_service=_session_issuer_service(FakeRefreshTokenRepository()),
         credential_repository=FakeCredentialRepository(_credential(is_revoked, partner_is_active))
     )
 
     with pytest.raises(InvalidClientError):
-        await use_case.execute(ClientCredentialsRequestDTO(client_id=_client_id, client_secret="segredo"))
+        await usecase.execute(ClientCredentialsRequestDTO(client_id=_client_id, client_secret="segredo"))
 
 
 def _stored_token(is_used: bool = False, expired: bool = False) -> RefreshToken:
@@ -195,14 +195,14 @@ async def test_renovacao_valida_rotaciona_o_par() -> None:
 
     repository = FakeRefreshTokenRepository(stored)
 
-    use_case = RefreshSessionUseCase(
+    usecase = RefreshSessionUseCase(
         refresh_repository=repository,
         refresh_factory=FakeRefreshFactory(),
         session_issuer_service=_session_issuer_service(repository),
         credential_repository=FakeCredentialRepository(_credential())
     )
 
-    pair = await use_case.execute(RefreshSessionRequestDTO(refresh_token="opaque-antigo"))
+    pair = await usecase.execute(RefreshSessionRequestDTO(refresh_token="opaque-antigo"))
 
     assert stored.token_id in repository.marked
     assert len(repository.created) == 1
@@ -214,7 +214,7 @@ async def test_reuso_de_refresh_token_revoga_a_familia() -> None:
 
     repository = FakeRefreshTokenRepository(_stored_token(is_used=True))
 
-    use_case = RefreshSessionUseCase(
+    usecase = RefreshSessionUseCase(
         refresh_repository=repository,
         refresh_factory=FakeRefreshFactory(),
         session_issuer_service=_session_issuer_service(repository),
@@ -222,7 +222,7 @@ async def test_reuso_de_refresh_token_revoga_a_familia() -> None:
     )
 
     with pytest.raises(InvalidGrantError):
-        await use_case.execute(RefreshSessionRequestDTO(refresh_token="opaque-antigo"))
+        await usecase.execute(RefreshSessionRequestDTO(refresh_token="opaque-antigo"))
 
     assert repository.revoked_families == [_client_id]
 
@@ -230,7 +230,7 @@ async def test_reuso_de_refresh_token_revoga_a_familia() -> None:
 async def test_refresh_token_expirado_e_rejeitado() -> None:
     repository = FakeRefreshTokenRepository(_stored_token(expired=True))
 
-    use_case = RefreshSessionUseCase(
+    usecase = RefreshSessionUseCase(
         refresh_repository=repository,
         refresh_factory=FakeRefreshFactory(),
         session_issuer_service=_session_issuer_service(repository),
@@ -238,6 +238,6 @@ async def test_refresh_token_expirado_e_rejeitado() -> None:
     )
 
     with pytest.raises(InvalidGrantError):
-        await use_case.execute(RefreshSessionRequestDTO(refresh_token="opaque-antigo"))
+        await usecase.execute(RefreshSessionRequestDTO(refresh_token="opaque-antigo"))
 
     assert repository.marked == []
