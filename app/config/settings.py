@@ -195,14 +195,21 @@ class ServiceSettings(BaseSettings):
         default=0.85,
         ge=0.0,
         le=1.0,
-        description="Limiar da RN004: extração abaixo deste índice marca a transação para revisão manual.",
+        description="Limiar da extração abaixo deste índice marca a transação para revisão manual.",
         examples=[0.85]
     )
 
     LLM_PROVIDER: str = Field(
-        default="anthropic",
+        default="openai",
         description="Provedor do modelo de linguagem utilizado na inferência.",
-        examples=["anthropic"]
+        examples=["openai"]
+    )
+
+    LLM_BASE_URL: str = Field(
+        default="https://api.openai.com/v1",
+        description="Raiz da API do provedor. Isolada em configuração para permitir apontar "
+                    "para um gateway compatível sem alterar o adaptador.",
+        examples=["https://api.openai.com/v1"]
     )
 
     LLM_API_KEY: Optional[SecretStr] = Field(
@@ -212,9 +219,10 @@ class ServiceSettings(BaseSettings):
     )
 
     LLM_MODEL: str = Field(
-        default="claude-sonnet-4-5",
-        description="Identificador do modelo usado na validação da extração.",
-        examples=["claude-sonnet-4-5"]
+        default="gpt-4.1-mini",
+        description="Modelo usado na estruturação do comprovante. Deve suportar Structured Outputs "
+                    "com `json_schema` e `strict`.",
+        examples=["gpt-4.1-mini"]
     )
 
     LLM_TIMEOUT_SECONDS: int = Field(
@@ -222,6 +230,28 @@ class ServiceSettings(BaseSettings):
         ge=1,
         description="Tempo limite das chamadas ao provedor.",
         examples=[30]
+    )
+
+    WEBHOOK_TIMEOUT_SECONDS: int = Field(
+        default=10,
+        ge=1,
+        description="Tempo limite de cada tentativa de entrega do callback.",
+        examples=[10]
+    )
+
+    WEBHOOK_MAX_ATTEMPTS: int = Field(
+        default=3,
+        ge=1,
+        description="Tentativas de entrega do callback. Apenas falhas de rede e respostas 5xx são repetidas: "
+                    "4xx indica contrato incompatível e repetir não muda o desfecho.",
+        examples=[3]
+    )
+
+    WEBHOOK_RETRY_BACKOFF_SECONDS: float = Field(
+        default=2.0,
+        ge=0.0,
+        description="Base do intervalo linear entre as tentativas de entrega.",
+        examples=[2.0]
     )
 
     EMBEDDING_MODEL: str = Field(

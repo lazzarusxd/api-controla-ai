@@ -3,8 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.infra.queue.job_queue import ArqJobQueue
 from app.infra.database.postgres import PostgresPool
 from app.infra.cache.redis_client import RedisClient
+from app.infra.queue import job_queue as queue_module
 from app.infra.cache import redis_client as redis_module
 from app.infra.database import postgres as postgres_module
 from app.config.settings import ServiceSettings, get_settings
@@ -28,6 +30,8 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     redis_module.redis_client = RedisClient(service_settings)
     await redis_module.redis_client.connect()
 
+    queue_module.job_queue = ArqJobQueue()
+
     bootstrap_security(service_settings)
 
     logger.info("application_started")
@@ -40,6 +44,10 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         if redis_module.redis_client is not None:
             await redis_module.redis_client.disconnect()
             redis_module.redis_client = None
+
+        if queue_module.job_queue is not None:
+            await queue_module.job_queue.disconnect()
+            queue_module.job_queue = None
 
         if postgres_module.postgres_pool is not None:
             await postgres_module.postgres_pool.disconnect()

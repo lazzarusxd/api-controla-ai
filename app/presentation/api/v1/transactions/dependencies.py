@@ -10,6 +10,7 @@ from app.application.usecases.transactions.list_transactions import ListTransact
 from app.application.usecases.transactions.create_transaction import CreateTransactionUseCase
 from app.application.usecases.transactions.delete_transaction import DeleteTransactionUseCase
 from app.application.usecases.transactions.update_transaction import UpdateTransactionUseCase
+from app.application.usecases.transactions.review_transaction import ReviewTransactionUseCase
 from app.application.usecases.transactions.get_consolidated_balance import GetConsolidatedBalanceUseCase
 
 
@@ -51,3 +52,9 @@ def get_consolidated_balance_usecase(
         transaction_repository: Annotated[ITransactionRepository, Depends(get_transaction_repository)]
 ) -> GetConsolidatedBalanceUseCase:
     return GetConsolidatedBalanceUseCase(transaction_repository=transaction_repository)
+
+
+def get_review_transaction_usecase(
+        transaction_repository: Annotated[ITransactionRepository, Depends(get_transaction_repository)]
+) -> ReviewTransactionUseCase:
+    return ReviewTransactionUseCase(transaction_repository=transaction_repository)

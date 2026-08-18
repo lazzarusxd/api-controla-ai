@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import Optional, FrozenSet, List
 
 from app.domain.entities import Transaction
-from app.domain.types import TransactionStatus, TransactionType
+from app.domain.types import ReviewDecision, TransactionStatus, TransactionType
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,3 +120,27 @@ class ConsolidatedBalanceDTO:
     pending_expense: Decimal
     projected_balance: Decimal
     projection_until: Optional[date] = None
+
+
+@dataclass(frozen=True, slots=True)
+class ReviewTransactionRequestDTO:
+    """Entrada da revisão manual de lançamento com baixa confiança de OCR."""
+    user_id: UUID
+    partner_id: UUID
+    transaction_id: UUID
+    decision: ReviewDecision
+    category: Optional[str] = None
+    due_date: Optional[date] = None
+    amount: Optional[Decimal] = None
+    description: Optional[str] = None
+    type: Optional[TransactionType] = None
+    transaction_date: Optional[date] = None
+    status: Optional[TransactionStatus] = None
+    provided_fields: FrozenSet[str] = frozenset()
+
+    @property
+    def is_approval(self) -> bool:
+        return self.decision is ReviewDecision.APPROVE
+
+    def was_provided(self, field_name: str) -> bool:
+        return field_name in self.provided_fields

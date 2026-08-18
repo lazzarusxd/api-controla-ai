@@ -27,3 +27,9 @@ class InvalidPeriodError(TransactionError):
     """Intervalo de datas com início posterior ao fim."""
     def __init__(self, message: str = "A data inicial não pode ser posterior à data final.") -> None:
         super().__init__(message)
+
+
+class TransactionNotUnderReviewError(TransactionError):
+    """Revisão solicitada sobre lançamento que não está pendente de análise."""
+    def __init__(self, message: str = "Lançamento não está pendente de revisão.") -> None:
+        super().__init__(message)

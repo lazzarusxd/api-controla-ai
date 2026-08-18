@@ -1,13 +1,17 @@
-from enum import StrEnum
+from enum import Enum
 
 
-class TransactionType(StrEnum):
+class TransactionType(str, Enum):
     """Natureza do lançamento: entrada ou saída de recursos."""
+
+    # Entrada de valores.
     INCOME = "INCOME"
+
+    # Despesas.
     EXPENSE = "EXPENSE"
 
 
-class TransactionStatus(StrEnum):
+class TransactionStatus(str, Enum):
     """Estado contábil do lançamento, base da separação de regimes"""
 
     # Compõe exclusivamente o regime de competência.

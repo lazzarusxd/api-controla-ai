@@ -13,7 +13,17 @@ from app.domain.exceptions.transaction_exceptions import (
     UserNotFoundError,
     InvalidPeriodError,
     TransactionNotFoundError,
-    TransactionNotEditableError
+    TransactionNotEditableError,
+    TransactionNotUnderReviewError
+)
+from app.domain.exceptions.receipt_exceptions import (
+    ReceiptError,
+    EmptyReceiptError,
+    ReceiptNotFoundError,
+    ReceiptTooLargeError,
+    ReceiptExtractionError,
+    WebhookNotRegisteredError,
+    UnsupportedReceiptTypeError
 )
 
 
@@ -29,49 +39,28 @@ _OAUTH_STATUS: Dict[OAuthErrorCode, int] = {
     OAuthErrorCode.UNSUPPORTED_GRANT_TYPE: status.HTTP_400_BAD_REQUEST
 }
 
-PROBLEM_TYPE_BASE = "https://controla.ai/problems"
+_TRANSACTION_PROBLEM: Dict[type, Tuple[int, str]] = {
+    UserNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado."),
+    InvalidPeriodError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Período inválido."),
+    TransactionNotFoundError: (status.HTTP_404_NOT_FOUND, "Lançamento não encontrado."),
+    TransactionNotEditableError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Lançamento imutável."),
+    TransactionNotUnderReviewError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Lançamento não pendente de revisão.")
+}
 
-_BUSINESS_RULE_PROBLEM: Tuple[int, str, str] = (
-    status.HTTP_422_UNPROCESSABLE_ENTITY,
-    "regra-de-negocio-violada",
-    "Regra de negócio violada."
-)
-
-_TRANSACTION_PROBLEM: Dict[type, Tuple[int, str, str]] = {
-    UserNotFoundError: (
-        status.HTTP_404_NOT_FOUND,
-        "usuario-nao-encontrado",
-        "Usuário não encontrado."
-    ),
-    InvalidPeriodError: (
-        status.HTTP_422_UNPROCESSABLE_ENTITY,
-        "periodo-invalido",
-        "Período inválido."
-    ),
-    TransactionNotFoundError: (
-        status.HTTP_404_NOT_FOUND,
-        "lancamento-nao-encontrado",
-        "Lançamento não encontrado."
-    ),
-    TransactionNotEditableError: (
-        status.HTTP_422_UNPROCESSABLE_ENTITY,
-        "lancamento-imutavel",
-        "Lançamento imutável."
-    )
+_RECEIPT_PROBLEM: Dict[type, Tuple[int, str]] = {
+    EmptyReceiptError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Arquivo vazio."),
+    ReceiptNotFoundError: (status.HTTP_404_NOT_FOUND, "Comprovante não encontrado."),
+    WebhookNotRegisteredError: (status.HTTP_404_NOT_FOUND, "Webhook não registrado."),
+    ReceiptTooLargeError: (status.HTTP_413_CONTENT_TOO_LARGE, "Arquivo grande demais."),
+    ReceiptExtractionError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Extração do comprovante inviável."),
+    UnsupportedReceiptTypeError: (status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Tipo de arquivo não suportado.")
 }
 
 
-def _problem(
-        title: str,
-        detail: str,
-        request: Request,
-        status_code: int,
-        problem_type: str,
-        **extra: Any
-) -> JSONResponse:
+def _problem(request: Request, status_code: int, title: str, detail: str, **extra: Any) -> JSONResponse:
     """Monta um corpo application/problem+json conforme RFC 9457."""
     body: Dict[str, Any] = {
-        "type": f"{PROBLEM_TYPE_BASE}/{problem_type}",
+        "type": f"https://controla.ai/problems/{title}",
         "title": title,
         "status": status_code,
         "detail": detail,
@@ -106,15 +95,21 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(TransactionError)
     async def _transaction_error(request: Request, exc: TransactionError) -> JSONResponse:
-        status_code, problem_type, title = _TRANSACTION_PROBLEM.get(type(exc), _BUSINESS_RULE_PROBLEM)
-
-        return _problem(
-            title=title,
-            request=request,
-            detail=exc.message,
-            status_code=status_code,
-            problem_type=problem_type
+        status_code, title = _TRANSACTION_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
         )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
+
+    @app.exception_handler(ReceiptError)
+    async def _receipt_error(request: Request, exc: ReceiptError) -> JSONResponse:
+        status_code, title = _RECEIPT_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
+        )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
 
     @app.exception_handler(DomainError)
     async def _domain_error(request: Request, exc: DomainError) -> JSONResponse:
@@ -122,17 +117,15 @@ def register_exception_handlers(app: FastAPI) -> None:
             request=request,
             detail=exc.message,
             title="Regra de negócio violada.",
-            problem_type="regra-de-negocio-violada",
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT
         )
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
         return _problem(
             request=request,
-            problem_type="payload-invalido",
             title="Corpo da requisição inválido.",
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="A requisição não satisfaz o contrato do endpoint.",
             errors=[
                 {"field": ".".join(str(part) for part in error.get("loc")), "message": error.get("msg")}
@@ -146,7 +139,6 @@ def register_exception_handlers(app: FastAPI) -> None:
 
         return _problem(
             request=request,
-            problem_type="erro-interno",
             title="Erro interno do servidor.",
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Erro interno no processamento da requisição."

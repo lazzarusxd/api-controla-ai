@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app.domain.types.oauth import TokenType
+from app.domain.types import TokenType
 
 
 @dataclass(frozen=True, slots=True)
