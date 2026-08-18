@@ -1,5 +1,6 @@
 from .consolidated_balance import ConsolidatedBalance
 from .authenticated_partner import AuthenticatedPartner
+from .extraction_confidence import ExtractionConfidence, ExtractionConfidenceWeights
 
 
 __all__ = [
@@ -7,5 +8,9 @@ __all__ = [
     "AuthenticatedPartner",
 
     # Consolidated Balance
-    "ConsolidatedBalance"
+    "ConsolidatedBalance",
+
+    # Extraction Confidence
+    "ExtractionConfidence",
+    "ExtractionConfidenceWeights"
 ]

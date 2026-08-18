@@ -7,7 +7,7 @@ from fastapi import Query
 from pydantic import BaseModel, Field, PlainSerializer, model_validator
 
 from app.domain.entities import Transaction
-from app.domain.types import TransactionStatus, TransactionType
+from app.domain.types import ReviewDecision, TransactionStatus, TransactionType
 
 
 MonetaryAmount = Annotated[
@@ -359,5 +359,53 @@ class GetConsolidatedBalanceQueryParameters(BaseModel):
     projection_until: Optional[date] = Query(
         default=None,
         description="Horizonte do regime de competência. Ausente, projeta todo o saldo em aberto.",
+        examples=[date.today()]
+    )
+
+
+class TransactionReviewRequest(BaseModel):
+    """Corpo da revisão manual de lançamento extraído com baixa confiança."""
+    decision: ReviewDecision = Field(
+        default=...,
+        description="`APPROVE` devolve o lançamento aos regimes contábeis. `REJECT` o leva a `CANCELED`.",
+        examples=[ReviewDecision.APPROVE]
+    )
+    type: Optional[TransactionType] = Field(
+        default=None,
+        description="Correção da natureza inferida pelo modelo.",
+        examples=[TransactionType.EXPENSE]
+    )
+    amount: Optional[MonetaryAmount] = Field(
+        default=None,
+        description="Correção do valor lido no comprovante.",
+        examples=[189.90]
+    )
+    category: Optional[str] = Field(
+        default=None,
+        max_length=100,
+        min_length=1,
+        description="Correção da categoria atribuída.",
+        examples=["Alimentação"]
+    )
+    description: Optional[str] = Field(
+        default=None,
+        max_length=500,
+        min_length=1,
+        description="Correção da descrição gerada.",
+        examples=["Supermercado Central - compra da semana"]
+    )
+    transaction_date: Optional[date] = Field(
+        default=None,
+        description="Correção da data do fato gerador.",
+        examples=[date.today()]
+    )
+    status: Optional[TransactionStatus] = Field(
+        default=None,
+        description="Regime do lançamento aprovado. Ignorado quando a decisão é `REJECT`.",
+        examples=[TransactionStatus.SETTLED]
+    )
+    due_date: Optional[date] = Field(
+        default=None,
+        description="Vencimento, quando o lançamento aprovado permanecer em `PENDING`.",
         examples=[date.today()]
     )

@@ -11,12 +11,14 @@ from app.application.usecases.transactions.list_transactions import ListTransact
 from app.application.usecases.transactions.create_transaction import CreateTransactionUseCase
 from app.application.usecases.transactions.delete_transaction import DeleteTransactionUseCase
 from app.application.usecases.transactions.update_transaction import UpdateTransactionUseCase
+from app.application.usecases.transactions.review_transaction import ReviewTransactionUseCase
 from app.application.usecases.transactions.get_consolidated_balance import GetConsolidatedBalanceUseCase
 from app.presentation.api.v1.transactions.schemas import (
     TransactionResponse,
     TransactionPageResponse,
     TransactionCreateRequest,
     TransactionUpdateRequest,
+    TransactionReviewRequest,
     ConsolidatedBalanceResponse,
     ListTransactionQueryParameters,
     GetConsolidatedBalanceQueryParameters
@@ -27,6 +29,7 @@ from app.application.dto import (
     CreateTransactionRequestDTO,
     DeleteTransactionRequestDTO,
     UpdateTransactionRequestDTO,
+    ReviewTransactionRequestDTO,
     ConsolidatedBalanceRequestDTO
 )
 from app.presentation.api.v1.transactions.dependencies import (
@@ -35,6 +38,7 @@ from app.presentation.api.v1.transactions.dependencies import (
     get_update_transaction_usecase,
     get_create_transaction_usecase,
     get_delete_transaction_usecase,
+    get_review_transaction_usecase,
     get_consolidated_balance_usecase
 )
 
@@ -339,3 +343,65 @@ async def delete_transaction(
             partner_id=current_partner.partner_id
         )
     )
+
+
+@router.post(
+    path="/{transaction_id}/review",
+    response_model=TransactionResponse,
+    operation_id="review-transaction-v1",
+    summary="Revisa um lançamento extraído com baixa confiança de OCR.",
+    description="Fecha o ciclo da RN004. O lançamento gerado com `pending_review` verdadeiro está fora do saldo "
+                "de caixa e da projeção por competência até passar por aqui. `APPROVE` zera a marcação e o "
+                "devolve aos regimes contábeis, admitindo correção dos campos que o modelo inferiu errado. "
+                "`REJECT` o leva a `CANCELED`, estado terminal que preserva o rastro do que o OCR entendeu — "
+                "apagar o registro apagaria também a evidência da falha de extração. Lançamentos criados "
+                "manualmente não são revisáveis: não houve extração a validar.",
+    responses={
+        200: {
+            "model": TransactionResponse,
+            "description": "Revisão aplicada. Em `APPROVE`, `pending_review` volta a falso e o lançamento passa a "
+                           "compor o saldo."
+        },
+        401: {
+            "model": OAuthErrorResponse,
+            "description": "Access token ausente, malformado, indecifrável ou expirado. O corpo segue o formato de "
+                           "erro da RFC 6749 (`error` e `error_description`), não `problem+json`, e a resposta "
+                           "acompanha o cabeçalho `WWW-Authenticate` conforme a RFC 6750."
+        },
+        404: {
+            "model": ProblemDetailResponse,
+            "description": "Lançamento inexistente ou fora do escopo do parceiro autenticado. `title` vale "
+                           "`Lançamento não encontrado.`."
+        },
+        422: {
+            "model": ProblemDetailResponse,
+            "description": "Lançamento fora de revisão (`title` vale `Lançamento não pendente de revisão.`) ou já "
+                           "cancelado (`title` vale `Lançamento imutável.`)."
+        }
+    }
+)
+async def review_transaction(
+        user_id: UserIdPath,
+        current_partner: CurrentPartner,
+        transaction_id: TransactionIdPath,
+        transaction_review_request: TransactionReviewRequest,
+        review_transaction_usecase: ReviewTransactionUseCase = Depends(get_review_transaction_usecase)
+) -> TransactionResponse:
+    transaction = await review_transaction_usecase.execute(
+        review_transaction_request=ReviewTransactionRequestDTO(
+            user_id=user_id,
+            transaction_id=transaction_id,
+            type=transaction_review_request.type,
+            partner_id=current_partner.partner_id,
+            amount=transaction_review_request.amount,
+            status=transaction_review_request.status,
+            due_date=transaction_review_request.due_date,
+            category=transaction_review_request.category,
+            decision=transaction_review_request.decision,
+            description=transaction_review_request.description,
+            transaction_date=transaction_review_request.transaction_date,
+            provided_fields=frozenset(transaction_review_request.model_fields_set)
+        )
+    )
+
+    return TransactionResponse.from_entity(transaction)
