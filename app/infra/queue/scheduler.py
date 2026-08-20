@@ -1,10 +1,30 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, cast
+
+from arq import cron
+from arq.typing import WorkerCoroutine
 
 from app.config.settings import get_settings
 from app.infra.cache.redis_client import RedisClient
 from app.infra.database.postgres import PostgresPool
 from app.infra.queue.settings import build_redis_settings
 from app.config.logging_setup import configure_logging, logger
+from app.infra.queue.tasks.index_pending_context import index_pending_context
+
+
+def _build_cron_jobs() -> List[Any]:
+    """Janela de varredura da indexação vetorial, derivada de RAG_INDEX_CRON_MINUTES."""
+    settings = get_settings()
+
+    step = max(1, min(settings.RAG_INDEX_CRON_MINUTES, 60))
+
+    return [
+        cron(
+            cast(WorkerCoroutine, index_pending_context),
+            minute=set(range(0, 60, step)),
+            run_at_startup=True,
+            unique=True
+        )
+    ]
 
 
 async def startup(ctx: Dict[str, Any]) -> None:
@@ -40,5 +60,5 @@ class SchedulerSettings:
     on_startup = startup
     on_shutdown = shutdown
     functions: List[Any] = []
-    cron_jobs: List[Any] = []
+    cron_jobs: List[Any] = _build_cron_jobs()
     redis_settings = build_redis_settings()

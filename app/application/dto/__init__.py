@@ -25,6 +25,22 @@ from .receipt import (
     ReceiptProcessingResultDTO,
     RotateWebhookSecretRequestDTO
 )
+from .assistant import (
+    IndexingResultDTO,
+    AssistantAnswerDTO,
+    EmbeddingRecordDTO,
+    GeneratedAnswerDTO,
+    ContextReferenceDTO,
+    ConversationTurnDTO,
+    AskAssistantRequestDTO,
+    VectorSearchRequestDTO,
+    AssistantMessagePageDTO,
+    RetrieveContextRequestDTO,
+    IndexUserContextRequestDTO,
+    AssistantGenerationRequestDTO,
+    ListAssistantMessagesRequestDTO,
+    CreateAssistantMessageRequestDTO
+)
 
 
 __all__ = [
@@ -57,5 +73,21 @@ __all__ = [
     "RegisterWebhookRequestDTO",
     "WebhookDeliveryRequestDTO",
     "ReceiptProcessingResultDTO",
-    "RotateWebhookSecretRequestDTO"
+    "RotateWebhookSecretRequestDTO",
+
+    # Assistant
+    "IndexingResultDTO",
+    "AssistantAnswerDTO",
+    "EmbeddingRecordDTO",
+    "GeneratedAnswerDTO",
+    "ConversationTurnDTO",
+    "ContextReferenceDTO",
+    "AskAssistantRequestDTO",
+    "VectorSearchRequestDTO",
+    "AssistantMessagePageDTO",
+    "RetrieveContextRequestDTO",
+    "IndexUserContextRequestDTO",
+    "AssistantGenerationRequestDTO",
+    "ListAssistantMessagesRequestDTO",
+    "CreateAssistantMessageRequestDTO"
 ]

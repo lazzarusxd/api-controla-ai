@@ -1,3 +1,5 @@
+from .context_chunk import ContextChunk
+from .retrieved_context import RetrievedContext
 from .consolidated_balance import ConsolidatedBalance
 from .authenticated_partner import AuthenticatedPartner
 from .extraction_confidence import ExtractionConfidence, ExtractionConfidenceWeights
@@ -12,5 +14,9 @@ __all__ = [
 
     # Extraction Confidence
     "ExtractionConfidence",
-    "ExtractionConfidenceWeights"
+    "ExtractionConfidenceWeights",
+
+    # Assistant
+    "ContextChunk",
+    "RetrievedContext"
 ]

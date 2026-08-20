@@ -267,6 +267,55 @@ class ServiceSettings(BaseSettings):
         examples=[1536]
     )
 
+    RAG_TOP_K: int = Field(
+        default=8,
+        ge=1,
+        le=50,
+        description="Vizinhos recuperados da base vetorial por pergunta.",
+        examples=[8]
+    )
+
+    RAG_MIN_SIMILARITY: float = Field(
+        default=0.25,
+        ge=0.0,
+        le=1.0,
+        description="Similaridade de cosseno mínima para um trecho entrar no prompt. "
+                    "Abaixo dela o trecho é descartado ainda que seja o vizinho mais próximo.",
+        examples=[0.25]
+    )
+
+    RAG_MAX_CONTEXT_CHARS: int = Field(
+        default=6000,
+        ge=500,
+        description="Teto de caracteres do contexto injetado no prompt do assistente.",
+        examples=[6000]
+    )
+
+    ASSISTANT_HISTORY_TURNS: int = Field(
+        default=5,
+        ge=0,
+        le=20,
+        description="Turnos anteriores do mesmo diálogo injetados no prompt. Zero desliga a memória "
+                    "conversacional e cada pergunta volta a ser independente.",
+        examples=[5]
+    )
+
+    RAG_INDEX_BATCH_SIZE: int = Field(
+        default=200,
+        ge=1,
+        le=1000,
+        description="Registros vetorizados por passada de indexação, por parceiro.",
+        examples=[200]
+    )
+
+    RAG_INDEX_CRON_MINUTES: int = Field(
+        default=15,
+        ge=1,
+        le=60,
+        description="Intervalo, em minutos, da varredura de indexação executada pelo scheduler.",
+        examples=[15]
+    )
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

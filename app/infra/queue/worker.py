@@ -6,6 +6,7 @@ from app.infra.database.postgres import PostgresPool
 from app.infra.queue.settings import build_redis_settings
 from app.config.logging_setup import configure_logging, logger
 from app.infra.queue.tasks.process_receipt import process_receipt
+from app.infra.queue.tasks.index_user_context import index_user_context
 
 
 async def startup(ctx: Dict[str, Any]) -> None:
@@ -45,4 +46,4 @@ class WorkerSettings:
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = build_redis_settings()
-    functions: List[Any] = [process_receipt]
+    functions: List[Any] = [process_receipt, index_user_context]
