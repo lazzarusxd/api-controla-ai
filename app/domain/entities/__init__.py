@@ -4,6 +4,8 @@ from .credential import Credential
 from .transaction import Transaction
 from .refresh_token import RefreshToken
 from .partner_webhook import PartnerWebhook
+from .vector_embedding import VectorEmbedding
+from .assistant_message import AssistantMessage
 
 
 __all__ = [
@@ -21,5 +23,9 @@ __all__ = [
     "Transaction",
 
     # Receipt
-    "Receipt"
+    "Receipt",
+
+    # Assistant
+    "VectorEmbedding",
+    "AssistantMessage"
 ]

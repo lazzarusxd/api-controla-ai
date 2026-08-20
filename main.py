@@ -70,6 +70,7 @@ def create_app() -> FastAPI:
         openapi_url=None if service_settings.is_production else "/openapi.json",
         swagger_ui_parameters={
             "deepLinking": True,
+            "docExpansion": "none",
             "defaultModelsExpandDepth": -1
         }
     )
