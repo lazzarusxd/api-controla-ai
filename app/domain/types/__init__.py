@@ -1,3 +1,4 @@
+from .asset import AssetType
 from .webhook import WebhookEvent
 from .subscription import SubscriptionEvent
 from .oauth import OAuthErrorCode, TokenType, GrantType
@@ -24,6 +25,9 @@ __all__ = [
     # Assistant
     "EmbeddingSourceType",
     "AssistantAnswerStatus",
+
+    # Asset
+    "AssetType",
 
     # Subscription
     "SubscriptionEvent",

@@ -41,6 +41,18 @@ from .assistant import (
     ListAssistantMessagesRequestDTO,
     CreateAssistantMessageRequestDTO
 )
+from .asset import (
+    AssetPageDTO,
+    AssetTypeCostDTO,
+    GetAssetRequestDTO,
+    AssetCostSummaryDTO,
+    ListAssetsRequestDTO,
+    CreateAssetRequestDTO,
+    DeleteAssetRequestDTO,
+    UpdateAssetRequestDTO,
+    PersistAssetRequestDTO,
+    AssetCostSummaryRequestDTO
+)
 from .subscription import (
     SubscriptionPageDTO,
     SubscriptionAlertDTO,
@@ -104,6 +116,18 @@ __all__ = [
     "AssistantGenerationRequestDTO",
     "ListAssistantMessagesRequestDTO",
     "CreateAssistantMessageRequestDTO",
+
+    # Asset
+    "AssetPageDTO",
+    "AssetTypeCostDTO",
+    "GetAssetRequestDTO",
+    "AssetCostSummaryDTO",
+    "ListAssetsRequestDTO",
+    "CreateAssetRequestDTO",
+    "DeleteAssetRequestDTO",
+    "UpdateAssetRequestDTO",
+    "PersistAssetRequestDTO",
+    "AssetCostSummaryRequestDTO",
 
     # Subscription
     "SubscriptionPageDTO",

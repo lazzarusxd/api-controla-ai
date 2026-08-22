@@ -308,6 +308,30 @@ class ServiceSettings(BaseSettings):
         examples=[200]
     )
 
+    ASSET_VEHICLE_DEPRECIATION_RATE: float = Field(
+        default=0.0167,
+        ge=0.0,
+        le=1.0,
+        description="Taxa de depreciação mensal aplicada a veículos no cálculo do CET (RN006).",
+        examples=[0.0167]
+    )
+
+    ASSET_PROPERTY_DEPRECIATION_RATE: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Taxa de depreciação mensal aplicada a imóveis. Zero mantém o CET apenas tributário.",
+        examples=[0.0]
+    )
+
+    ASSET_OTHER_DEPRECIATION_RATE: float = Field(
+        default=0.0083,
+        ge=0.0,
+        le=1.0,
+        description="Taxa de depreciação mensal aplicada aos demais bens duráveis.",
+        examples=[0.0083]
+    )
+
     SUBSCRIPTION_ALERT_LEAD_DAYS: int = Field(
         default=3,
         ge=0,
