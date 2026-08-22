@@ -1,3 +1,4 @@
+from .asset import Asset
 from .partner import Partner
 from .receipt import Receipt
 from .credential import Credential
@@ -30,6 +31,9 @@ __all__ = [
     # Assistant
     "VectorEmbedding",
     "AssistantMessage",
+
+    # Asset
+    "Asset",
 
     # Subscription
     "Subscription",

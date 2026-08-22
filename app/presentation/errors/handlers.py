@@ -16,6 +16,13 @@ from app.domain.exceptions.transaction_exceptions import (
     TransactionNotEditableError,
     TransactionNotUnderReviewError
 )
+from app.domain.exceptions.asset_exceptions import (
+    AssetError,
+    AssetNotFoundError,
+    AssetOwnerNotFoundError,
+    InvalidAssetValuationError,
+    InvalidAcquisitionDateError
+)
 from app.domain.exceptions.subscription_exceptions import (
     InvalidDueDayError,
     SubscriptionError,
@@ -68,9 +75,16 @@ _RECEIPT_PROBLEM: Dict[type, Tuple[int, str]] = {
 }
 
 _SUBSCRIPTION_PROBLEM: Dict[type, Tuple[int, str]] = {
-    InvalidDueDayError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Dia de vencimento inválido."),
     SubscriptionNotFoundError: (status.HTTP_404_NOT_FOUND, "Recorrência não encontrada."),
-    SubscriptionOwnerNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado.")
+    SubscriptionOwnerNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado."),
+    InvalidDueDayError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Dia de vencimento inválido."),
+}
+
+_ASSET_PROBLEM: Dict[type, Tuple[int, str]] = {
+    AssetOwnerNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado."),
+    AssetNotFoundError: (status.HTTP_404_NOT_FOUND, "Bem patrimonial não encontrado."),
+    InvalidAssetValuationError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Valoração do bem inválida."),
+    InvalidAcquisitionDateError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Data de aquisição inválida.")
 }
 
 _ASSISTANT_PROBLEM: Dict[type, Tuple[int, str]] = {
@@ -136,6 +150,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(SubscriptionError)
     async def _subscription_error(request: Request, exc: SubscriptionError) -> JSONResponse:
         status_code, title = _SUBSCRIPTION_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
+        )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
+
+    @app.exception_handler(AssetError)
+    async def _asset_error(request: Request, exc: AssetError) -> JSONResponse:
+        status_code, title = _ASSET_PROBLEM.get(
             type(exc),
             (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
         )
