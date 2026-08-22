@@ -16,6 +16,12 @@ from app.domain.exceptions.transaction_exceptions import (
     TransactionNotEditableError,
     TransactionNotUnderReviewError
 )
+from app.domain.exceptions.subscription_exceptions import (
+    InvalidDueDayError,
+    SubscriptionError,
+    SubscriptionNotFoundError,
+    SubscriptionOwnerNotFoundError
+)
 from app.domain.exceptions.assistant_exceptions import (
     AssistantError,
     EmptyQuestionError,
@@ -59,6 +65,12 @@ _RECEIPT_PROBLEM: Dict[type, Tuple[int, str]] = {
     ReceiptTooLargeError: (status.HTTP_413_CONTENT_TOO_LARGE, "Arquivo grande demais."),
     ReceiptExtractionError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Extração do comprovante inviável."),
     UnsupportedReceiptTypeError: (status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Tipo de arquivo não suportado.")
+}
+
+_SUBSCRIPTION_PROBLEM: Dict[type, Tuple[int, str]] = {
+    InvalidDueDayError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Dia de vencimento inválido."),
+    SubscriptionNotFoundError: (status.HTTP_404_NOT_FOUND, "Recorrência não encontrada."),
+    SubscriptionOwnerNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado.")
 }
 
 _ASSISTANT_PROBLEM: Dict[type, Tuple[int, str]] = {
@@ -115,6 +127,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(ReceiptError)
     async def _receipt_error(request: Request, exc: ReceiptError) -> JSONResponse:
         status_code, title = _RECEIPT_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
+        )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
+
+    @app.exception_handler(SubscriptionError)
+    async def _subscription_error(request: Request, exc: SubscriptionError) -> JSONResponse:
+        status_code, title = _SUBSCRIPTION_PROBLEM.get(
             type(exc),
             (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
         )

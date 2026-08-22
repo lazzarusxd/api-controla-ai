@@ -308,6 +308,31 @@ class ServiceSettings(BaseSettings):
         examples=[200]
     )
 
+    SUBSCRIPTION_ALERT_LEAD_DAYS: int = Field(
+        default=3,
+        ge=0,
+        le=90,
+        description="Antecedência, em dias, do aviso de vencimento de recorrência. Zero avisa no próprio "
+                    "dia do vencimento.",
+        examples=[3]
+    )
+
+    SUBSCRIPTION_NOTIFY_CRON_HOUR: int = Field(
+        default=8,
+        ge=0,
+        le=23,
+        description="Hora local da varredura diária de vencimentos executada pelo scheduler.",
+        examples=[8]
+    )
+
+    SUBSCRIPTION_SWEEP_BATCH_SIZE: int = Field(
+        default=500,
+        ge=1,
+        le=5000,
+        description="Recorrências ativas avaliadas por passada, por parceiro.",
+        examples=[500]
+    )
+
     RAG_INDEX_CRON_MINUTES: int = Field(
         default=15,
         ge=1,

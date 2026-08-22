@@ -13,9 +13,11 @@ from .i_embedding_repository import IEmbeddingRepository
 from .i_refresh_token_factory import IRefreshTokenFactory
 from .i_credential_repository import ICredentialRepository
 from .i_transaction_repository import ITransactionRepository
+from .i_subscription_repository import ISubscriptionRepository
 from .i_refresh_token_repository import IRefreshTokenRepository
 from .i_partner_webhook_repository import IPartnerWebhookRepository
 from .i_assistant_message_repository import IAssistantMessageRepository
+from .i_subscription_notification_repository import ISubscriptionNotificationRepository
 
 
 __all__ = [
@@ -34,7 +36,9 @@ __all__ = [
     "IEmbeddingRepository",
     "ICredentialRepository",
     "ITransactionRepository",
+    "ISubscriptionRepository",
     "IRefreshTokenRepository",
     "IPartnerWebhookRepository",
-    "IAssistantMessageRepository"
+    "IAssistantMessageRepository",
+    "ISubscriptionNotificationRepository"
 ]

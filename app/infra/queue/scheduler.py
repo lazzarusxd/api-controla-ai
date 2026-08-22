@@ -9,10 +9,11 @@ from app.infra.database.postgres import PostgresPool
 from app.infra.queue.settings import build_redis_settings
 from app.config.logging_setup import configure_logging, logger
 from app.infra.queue.tasks.index_pending_context import index_pending_context
+from app.infra.queue.tasks.notify_due_subscriptions import notify_due_subscriptions
 
 
 def _build_cron_jobs() -> List[Any]:
-    """Janela de varredura da indexação vetorial, derivada de RAG_INDEX_CRON_MINUTES."""
+    """Janelas periódicas do agendador, derivadas das settings de cada módulo."""
     settings = get_settings()
 
     step = max(1, min(settings.RAG_INDEX_CRON_MINUTES, 60))
@@ -22,6 +23,13 @@ def _build_cron_jobs() -> List[Any]:
             cast(WorkerCoroutine, index_pending_context),
             minute=set(range(0, 60, step)),
             run_at_startup=True,
+            unique=True
+        ),
+        cron(
+            cast(WorkerCoroutine, notify_due_subscriptions),
+            hour={settings.SUBSCRIPTION_NOTIFY_CRON_HOUR},
+            minute={0},
+            run_at_startup=False,
             unique=True
         )
     ]
