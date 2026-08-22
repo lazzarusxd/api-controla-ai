@@ -41,6 +41,20 @@ from .assistant import (
     ListAssistantMessagesRequestDTO,
     CreateAssistantMessageRequestDTO
 )
+from .subscription import (
+    SubscriptionPageDTO,
+    SubscriptionAlertDTO,
+    GetSubscriptionRequestDTO,
+    DueSubscriptionsRequestDTO,
+    SubscriptionSweepResultDTO,
+    ListSubscriptionsRequestDTO,
+    CreateSubscriptionRequestDTO,
+    DeleteSubscriptionRequestDTO,
+    UpdateSubscriptionRequestDTO,
+    SubscriptionNotificationPageDTO,
+    ClaimSubscriptionNotificationRequestDTO,
+    ListSubscriptionNotificationsRequestDTO
+)
 
 
 __all__ = [
@@ -89,5 +103,19 @@ __all__ = [
     "IndexUserContextRequestDTO",
     "AssistantGenerationRequestDTO",
     "ListAssistantMessagesRequestDTO",
-    "CreateAssistantMessageRequestDTO"
+    "CreateAssistantMessageRequestDTO",
+
+    # Subscription
+    "SubscriptionPageDTO",
+    "SubscriptionAlertDTO",
+    "GetSubscriptionRequestDTO",
+    "SubscriptionSweepResultDTO",
+    "DueSubscriptionsRequestDTO",
+    "ListSubscriptionsRequestDTO",
+    "CreateSubscriptionRequestDTO",
+    "DeleteSubscriptionRequestDTO",
+    "UpdateSubscriptionRequestDTO",
+    "SubscriptionNotificationPageDTO",
+    "ClaimSubscriptionNotificationRequestDTO",
+    "ListSubscriptionNotificationsRequestDTO"
 ]

@@ -1,3 +1,5 @@
+from .webhook import WebhookEvent
+from .subscription import SubscriptionEvent
 from .oauth import OAuthErrorCode, TokenType, GrantType
 from .transaction import TransactionType, TransactionStatus
 from .receipt import ReceiptStatus, ReceiptEvent, ReviewDecision
@@ -21,5 +23,11 @@ __all__ = [
 
     # Assistant
     "EmbeddingSourceType",
-    "AssistantAnswerStatus"
+    "AssistantAnswerStatus",
+
+    # Subscription
+    "SubscriptionEvent",
+
+    # Webhook
+    "WebhookEvent"
 ]

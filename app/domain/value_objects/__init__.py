@@ -1,3 +1,4 @@
+from .billing_cycle import BillingCycle
 from .context_chunk import ContextChunk
 from .retrieved_context import RetrievedContext
 from .consolidated_balance import ConsolidatedBalance
@@ -18,5 +19,8 @@ __all__ = [
 
     # Assistant
     "ContextChunk",
-    "RetrievedContext"
+    "RetrievedContext",
+
+    # Subscription
+    "BillingCycle"
 ]

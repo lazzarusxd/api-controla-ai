@@ -111,6 +111,7 @@ CREATE TABLE subscriptions (
     updated_at      timestamptz   NULL,
 
     CONSTRAINT pk_subscriptions        PRIMARY KEY (subscription_id),
+    CONSTRAINT uq_subscriptions_tenant UNIQUE (partner_id, subscription_id),
     CONSTRAINT fk_subscriptions_user   FOREIGN KEY (partner_id, user_id) REFERENCES users (partner_id, user_id) ON DELETE CASCADE,
     CONSTRAINT ck_subscriptions_amount CHECK (amount > 0),
     CONSTRAINT ck_subscriptions_day    CHECK (due_day BETWEEN 1 AND 31)

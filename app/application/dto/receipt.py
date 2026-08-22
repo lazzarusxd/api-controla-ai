@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
 from app.domain.entities import Receipt
-from app.domain.types import ReceiptEvent, ReceiptStatus, TransactionStatus, TransactionType
+from app.domain.types import WebhookEvent, ReceiptEvent, ReceiptStatus, TransactionType, TransactionStatus
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,7 +110,7 @@ class WebhookDeliveryRequestDTO:
     """Entrada da entrega de callback."""
     secret: str
     target_url: str
-    event: ReceiptEvent
+    event: WebhookEvent
     payload: Dict[str, Any]
 
 
