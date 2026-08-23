@@ -8,10 +8,11 @@ from app.domain.entities import Transaction
 from app.infra.database.postgres import PostgresPool
 from app.application.interfaces import ITransactionRepository
 from app.domain.types import TransactionStatus, TransactionType
-from app.domain.value_objects import CategoryVolume, ConsolidatedBalance
 from app.domain.exceptions.transaction_exceptions import UserNotFoundError
+from app.domain.value_objects import CategoryVolume, ConsolidatedBalance, MonthlyNetFlow
 from app.application.dto import (
     GetTransactionRequestDTO,
+    SavingsCapacityRequestDTO,
     ExpenseOffendersRequestDTO,
     ListTransactionsRequestDTO,
     CreateTransactionRequestDTO,
@@ -375,6 +376,42 @@ class TransactionRepository(ITransactionRepository):
                 total=int(record.get("total")),
                 category=record.get("category"),
                 amount=Decimal(record.get("amount"))
+            )
+            for record in records
+        ]
+
+    async def aggregate_monthly_net_flow(
+            self,
+            savings_capacity_request: SavingsCapacityRequestDTO
+    ) -> List[MonthlyNetFlow]:
+        async with self._pool.tenant_transaction(savings_capacity_request.partner_id) as connection:
+            records = await connection.fetch(
+                """
+                    SELECT
+                        date_trunc('month', transaction_date)::date AS reference_month,
+                        coalesce(sum(amount) FILTER (WHERE type = 'INCOME'), 0) AS income,
+                        coalesce(sum(amount) FILTER (WHERE type = 'EXPENSE'), 0) AS expense
+                    FROM transactions
+                    WHERE partner_id = $1
+                        AND user_id = $2
+                        AND status = 'SETTLED'
+                        AND pending_review = false
+                        AND transaction_date >= $3::date
+                        AND transaction_date <= $4::date
+                    GROUP BY date_trunc('month', transaction_date)
+                    ORDER BY date_trunc('month', transaction_date) ASC
+                """,
+                savings_capacity_request.partner_id,
+                savings_capacity_request.user_id,
+                savings_capacity_request.window_start,
+                savings_capacity_request.reference_date
+            )
+
+        return [
+            MonthlyNetFlow(
+                income=Decimal(record.get("income")),
+                expense=Decimal(record.get("expense")),
+                reference_month=record.get("reference_month")
             )
             for record in records
         ]
