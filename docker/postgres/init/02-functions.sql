@@ -1,10 +1,10 @@
 -- =============================================================================
--- 02-functions.sql — funções utilitárias compartilhadas pelo schema
+-- 02-functions.sql, funções utilitárias compartilhadas pelo schema
 -- =============================================================================
 SET search_path TO controla_ai, public;
 
 -- -----------------------------------------------------------------------------
--- uuid_generate_v7() — identificadores UUIDv7 (RFC 9562, seção 5.7)
+-- uuid_generate_v7(), identificadores UUIDv7 (RFC 9562, seção 5.7)
 -- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION uuid_generate_v7()
 RETURNS uuid
@@ -38,7 +38,7 @@ COMMENT ON FUNCTION uuid_generate_v7() IS
     'Gera UUID versão 7 (RFC 9562) com prefixo temporal de 48 bits.';
 
 -- -----------------------------------------------------------------------------
--- set_updated_at() — trigger genérica de auditoria temporal
+-- set_updated_at(), trigger genérica de auditoria temporal
 -- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS trigger

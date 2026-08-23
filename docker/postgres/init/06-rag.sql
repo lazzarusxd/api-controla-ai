@@ -1,5 +1,5 @@
 -- =============================================================================
--- 06-rag.sql — base vetorial do assistente (RF010, RN011)
+-- 06-rag.sql, base vetorial do assistente (RF010, RN011)
 -- =============================================================================
 SET search_path TO controla_ai, public;
 

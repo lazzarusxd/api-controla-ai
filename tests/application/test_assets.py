@@ -19,7 +19,7 @@ from app.domain.exceptions.asset_exceptions import (
     InvalidAssetValuationError,
     InvalidAcquisitionDateError
 )
-from app.application.dto.asset import (
+from app.application.dto import (
     AssetTypeCostDTO,
     GetAssetRequestDTO,
     ListAssetsRequestDTO,
@@ -251,7 +251,7 @@ async def test_update_asset_preserves_untouched_fields() -> None:
             user_id=USER_ID,
             asset_id=uuid4(),
             partner_id=PARTNER_ID,
-            description="Fiat Argo — placa ABC1D23",
+            description="Fiat Argo, placa ABC1D23",
             provided_fields=frozenset({"description"})
         )
     )

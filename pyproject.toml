@@ -48,7 +48,7 @@ packages = ["app"]
 [tool.uv]
 required-version = ">=0.9.0"
 
-# ─── Ruff — lint e formatação (PEP 8) ────────────────────────
+# ─── Ruff, lint e formatação (PEP 8) ────────────────────────
 [tool.ruff]
 line-length = 88
 target-version = "py314"
@@ -82,7 +82,7 @@ ignore = [
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
 
-# ─── mypy — verificação estática de tipos ────────────────────
+# ─── mypy, verificação estática de tipos ────────────────────
 [tool.mypy]
 python_version = "3.14"
 strict = true

@@ -6,12 +6,13 @@ import asyncpg
 
 from app.domain.entities import Transaction
 from app.infra.database.postgres import PostgresPool
-from app.domain.value_objects import ConsolidatedBalance
 from app.application.interfaces import ITransactionRepository
 from app.domain.types import TransactionStatus, TransactionType
+from app.domain.value_objects import CategoryVolume, ConsolidatedBalance
 from app.domain.exceptions.transaction_exceptions import UserNotFoundError
 from app.application.dto import (
     GetTransactionRequestDTO,
+    ExpenseOffendersRequestDTO,
     ListTransactionsRequestDTO,
     CreateTransactionRequestDTO,
     DeleteTransactionRequestDTO,
@@ -340,6 +341,43 @@ class TransactionRepository(ITransactionRepository):
             settled_expense=Decimal(record.get("settled_expense")),
             pending_expense=Decimal(record.get("pending_expense"))
         )
+
+    async def aggregate_expense_by_category(
+            self,
+            expense_offenders_request: ExpenseOffendersRequestDTO
+    ) -> List[CategoryVolume]:
+        async with self._pool.tenant_transaction(expense_offenders_request.partner_id) as connection:
+            records = await connection.fetch(
+                """
+                    SELECT
+                        category,
+                        count(*) AS total,
+                        sum(amount) AS amount
+                    FROM transactions
+                    WHERE partner_id = $1
+                        AND user_id = $2
+                        AND type = 'EXPENSE'
+                        AND status = 'SETTLED'
+                        AND pending_review = false
+                        AND ($3::date IS NULL OR transaction_date >= $3::date)
+                        AND ($4::date IS NULL OR transaction_date <= $4::date)
+                    GROUP BY category
+                    ORDER BY sum(amount) DESC, category ASC
+                """,
+                expense_offenders_request.partner_id,
+                expense_offenders_request.user_id,
+                expense_offenders_request.start_date,
+                expense_offenders_request.end_date
+            )
+
+        return [
+            CategoryVolume(
+                total=int(record.get("total")),
+                category=record.get("category"),
+                amount=Decimal(record.get("amount"))
+            )
+            for record in records
+        ]
 
     @staticmethod
     def _to_entity(record: asyncpg.Record) -> Transaction:

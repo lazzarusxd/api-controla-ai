@@ -25,5 +25,5 @@ class ExtractionConfidence:
         return weighted.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     def requires_review(self, threshold: Decimal) -> bool:
-        """Abaixo do limiar, o lançamento nasce fora dos dois regimes contábeis (RN004)."""
+        """Abaixo do limiar, o lançamento nasce fora dos dois regimes contábeis."""
         return self.score < threshold

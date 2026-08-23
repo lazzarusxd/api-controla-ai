@@ -2,10 +2,8 @@ from uuid import UUID
 from typing import List, Optional, Protocol, Tuple
 
 from app.domain.entities import SubscriptionNotification
-from app.application.dto.subscription import (
-    ClaimSubscriptionNotificationRequestDTO,
-    ListSubscriptionNotificationsRequestDTO
-)
+from app.application.dto import ClaimSubscriptionNotificationRequestDTO, ListSubscriptionNotificationsRequestDTO
+
 
 
 class ISubscriptionNotificationRepository(Protocol):

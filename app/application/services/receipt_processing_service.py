@@ -161,7 +161,7 @@ class ReceiptProcessingService:
             extracted: ExtractedTransactionDTO,
             process_receipt_request: ProcessReceiptRequestDTO
     ) -> CreateTransactionRequestDTO:
-        """Lançamento de baixa confiança nasce PENDING: fora do caixa até a revisão da RN004."""
+        """Lançamento de baixa confiança nasce PENDING: fora do caixa até a revisão do fallback."""
         status = TransactionStatus.PENDING if pending_review else extracted.status
 
         due_date = extracted.due_date

@@ -9,7 +9,7 @@ from app.domain.entities import Subscription, SubscriptionNotification
 
 @dataclass(frozen=True, slots=True)
 class CreateSubscriptionRequestDTO:
-    """Entrada do cadastro manual de recorrência (RN005)."""
+    """Entrada do cadastro manual de recorrência."""
     due_day: int
     user_id: UUID
     amount: Decimal

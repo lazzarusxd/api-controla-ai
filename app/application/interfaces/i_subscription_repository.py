@@ -1,7 +1,7 @@
 from typing import List, Optional, Protocol, Tuple
 
 from app.domain.entities import Subscription
-from app.application.dto.subscription import (
+from app.application.dto import (
     GetSubscriptionRequestDTO,
     DueSubscriptionsRequestDTO,
     ListSubscriptionsRequestDTO,

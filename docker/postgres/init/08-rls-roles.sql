@@ -1,10 +1,10 @@
 -- =============================================================================
--- 08-rls-roles.sql — papel de aplicação e correção do escopo da RLS
+-- 08-rls-roles.sql, papel de aplicação e correção do escopo da RLS
 --
 -- Corrige duas condições que tornavam o 07-rls.sql inoperante:
 --
 -- 1. Políticas em CREDENTIALS e REFRESH_TOKENS. Ambas filtram por
---    partner_id = current_partner_id(), mas são consultadas na autenticação —
+--    partner_id = current_partner_id(), mas são consultadas na autenticação,
 --    momento em que o partner_id ainda é desconhecido, porque descobri-lo é o
 --    próprio objetivo da consulta. O isolamento dessas tabelas é garantido pelo
 --    client_id na cláusula WHERE, não pela RLS.

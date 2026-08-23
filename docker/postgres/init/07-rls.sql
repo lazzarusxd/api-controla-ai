@@ -1,5 +1,5 @@
 -- =============================================================================
--- 07-rls.sql — Row Level Security como defesa em profundidade da RN002
+-- 07-rls.sql, Row Level Security como defesa em profundidade da RN002
 -- =============================================================================
 SET search_path TO controla_ai, public;
 

@@ -52,7 +52,7 @@ ReceiptIdPath = Annotated[
                 "resposta o lançamento ainda não existe, apenas o comprovante. O pipeline de OCR e "
                 "estruturação semântica roda em segundo plano. Acompanhe pelo `Location` devolvido ou "
                 "aguarde o callback registrado em `PUT /v1/partners/webhook`. Extração acima do limiar da "
-                "RN004 gera lançamento já integrado ao saldo; abaixo dele, o lançamento nasce pendente de "
+                "gera lançamento já integrado ao saldo; abaixo dele, o lançamento nasce pendente de "
                 "revisão e fica fora dos dois regimes contábeis até ser aprovado.",
     responses={
         202: {

@@ -9,7 +9,7 @@ from app.domain.value_objects import BillingCycle
 
 @dataclass(frozen=True, slots=True)
 class Subscription:
-    """Despesa recorrente de valor fixo, cadastrada manualmente pelo usuário final (RN005)."""
+    """Despesa recorrente de valor fixo, cadastrada manualmente pelo usuário final."""
     due_day: int
     user_id: UUID
     amount: Decimal

@@ -1,9 +1,10 @@
 from typing import Optional, Protocol, Tuple, List
 
 from app.domain.entities import Transaction
-from app.domain.value_objects import ConsolidatedBalance
-from app.application.dto.transaction import (
+from app.domain.value_objects import CategoryVolume, ConsolidatedBalance
+from app.application.dto import (
     GetTransactionRequestDTO,
+    ExpenseOffendersRequestDTO,
     ListTransactionsRequestDTO,
     CreateTransactionRequestDTO,
     DeleteTransactionRequestDTO,
@@ -38,5 +39,12 @@ class ITransactionRepository(Protocol):
         ...
 
     async def summarize(self, consolidated_balance_request: ConsolidatedBalanceRequestDTO) -> ConsolidatedBalance:
-        """Agrega os totalizadores dos dois regimes contábeis da RN003."""
+        """Agrega os totalizadores dos dois regimes contábeis (caixa e competência)."""
+        ...
+
+    async def aggregate_expense_by_category(
+            self,
+            expense_offenders_request: ExpenseOffendersRequestDTO
+    ) -> List[CategoryVolume]:
+        """Agrega a despesa liquidada por categoria no período, sem aplicar o recorte da Regra de Pareto."""
         ...

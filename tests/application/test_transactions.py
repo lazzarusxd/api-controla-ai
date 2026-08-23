@@ -19,7 +19,7 @@ from app.domain.exceptions.transaction_exceptions import (
     TransactionNotFoundError,
     TransactionNotEditableError
 )
-from app.application.dto.transaction import (
+from app.application.dto import (
     GetTransactionRequestDTO,
     ListTransactionsRequestDTO,
     CreateTransactionRequestDTO,
@@ -359,7 +359,7 @@ def test_offset_derives_from_one_based_page() -> None:
 
 
 def test_total_pages_rounds_up_partial_page() -> None:
-    from app.application.dto.transaction import TransactionPageDTO
+    from app.application.dto import TransactionPageDTO
 
     page = TransactionPageDTO(page=1, total=10, page_size=3, items=[])
 

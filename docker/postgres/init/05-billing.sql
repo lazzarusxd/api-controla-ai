@@ -1,10 +1,10 @@
 -- =============================================================================
--- 05-billing.sql — bilhetagem por consumo e faturamento (RF012, RN013)
+-- 05-billing.sql, bilhetagem por consumo e faturamento (RF012, RN013)
 -- =============================================================================
 SET search_path TO controla_ai, public;
 
 -- -----------------------------------------------------------------------------
--- METERING_LOGS — consolidação diária do consumo por parceiro
+-- METERING_LOGS, consolidação diária do consumo por parceiro
 -- -----------------------------------------------------------------------------
 CREATE TABLE metering_logs (
     log_id          uuid           NOT NULL DEFAULT uuid_generate_v7(),
@@ -31,7 +31,7 @@ COMMENT ON TABLE metering_logs IS
     'Consumo diário consolidado por parceiro; base de cálculo da fatura mensal (RN013).';
 
 -- -----------------------------------------------------------------------------
--- INVOICES — fatura mensal do parceiro
+-- INVOICES, fatura mensal do parceiro
 -- -----------------------------------------------------------------------------
 CREATE TABLE invoices (
     invoice_id      uuid          NOT NULL DEFAULT uuid_generate_v7(),

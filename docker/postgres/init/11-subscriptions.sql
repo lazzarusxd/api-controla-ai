@@ -1,5 +1,5 @@
 -- =============================================================================
--- 11-subscriptions.sql — rastro das notificações prévias de recorrência (RF004, RN005)
+-- 11-subscriptions.sql, rastro das notificações prévias de recorrência (RF004, RN005)
 -- =============================================================================
 SET search_path TO controla_ai, public;
 

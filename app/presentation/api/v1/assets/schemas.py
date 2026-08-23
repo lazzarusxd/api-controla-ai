@@ -68,7 +68,7 @@ class AssetUpdateRequest(BaseModel):
         max_length=500,
         min_length=1,
         description="Nova identificação do bem.",
-        examples=["Fiat Argo Drive 1.3 2022 — placa ABC1D23"]
+        examples=["Fiat Argo Drive 1.3 2022, placa ABC1D23"]
     )
     market_value: Optional[MonetaryAmount] = Field(
         default=None,

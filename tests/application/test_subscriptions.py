@@ -15,7 +15,7 @@ from app.application.usecases.subscriptions.delete_subscription import DeleteSub
 from app.application.usecases.subscriptions.update_subscription import UpdateSubscriptionUseCase
 from app.application.services.subscription_notification_service import SubscriptionNotificationService
 from app.domain.exceptions.subscription_exceptions import InvalidDueDayError, SubscriptionNotFoundError
-from app.application.dto.subscription import (
+from app.application.dto import (
     GetSubscriptionRequestDTO,
     DueSubscriptionsRequestDTO,
     ListSubscriptionsRequestDTO,
