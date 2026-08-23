@@ -2,6 +2,7 @@ from .i_job_queue import IJobQueue
 from .i_ocr_engine import IOcrEngine
 from .i_secret_hasher import ISecretHasher
 from .i_receipt_storage import IReceiptStorage
+from .i_goal_repository import IGoalRepository
 from .i_asset_repository import IAssetRepository
 from .i_webhook_notifier import IWebhookNotifier
 from .i_receipt_extractor import IReceiptExtractor
@@ -25,6 +26,7 @@ __all__ = [
     "IJobQueue",
     "IOcrEngine",
     "ISecretHasher",
+    "IGoalRepository",
     "IReceiptStorage",
     "IWebhookNotifier",
     "IAssetRepository",

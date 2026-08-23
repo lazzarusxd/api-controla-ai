@@ -68,6 +68,18 @@ from .subscription import (
     ClaimSubscriptionNotificationRequestDTO,
     ListSubscriptionNotificationsRequestDTO
 )
+from .goal import (
+    GoalPageDTO,
+    GoalViabilityDTO,
+    GetGoalRequestDTO,
+    ListGoalsRequestDTO,
+    CreateGoalRequestDTO,
+    DeleteGoalRequestDTO,
+    UpdateGoalRequestDTO,
+    PersistGoalRequestDTO,
+    GoalViabilityRequestDTO,
+    SavingsCapacityRequestDTO
+)
 
 
 __all__ = [
@@ -146,5 +158,17 @@ __all__ = [
 
     # Analytics
     "ExpenseOffendersDTO",
-    "ExpenseOffendersRequestDTO"
+    "ExpenseOffendersRequestDTO",
+
+    # Goal
+    "GoalPageDTO",
+    "GoalViabilityDTO",
+    "GetGoalRequestDTO",
+    "ListGoalsRequestDTO",
+    "CreateGoalRequestDTO",
+    "DeleteGoalRequestDTO",
+    "UpdateGoalRequestDTO",
+    "PersistGoalRequestDTO",
+    "GoalViabilityRequestDTO",
+    "SavingsCapacityRequestDTO"
 ]

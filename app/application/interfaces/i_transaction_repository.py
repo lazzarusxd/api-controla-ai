@@ -1,9 +1,10 @@
 from typing import Optional, Protocol, Tuple, List
 
 from app.domain.entities import Transaction
-from app.domain.value_objects import CategoryVolume, ConsolidatedBalance
+from app.domain.value_objects import CategoryVolume, ConsolidatedBalance, MonthlyNetFlow
 from app.application.dto import (
     GetTransactionRequestDTO,
+    SavingsCapacityRequestDTO,
     ExpenseOffendersRequestDTO,
     ListTransactionsRequestDTO,
     CreateTransactionRequestDTO,
@@ -47,4 +48,11 @@ class ITransactionRepository(Protocol):
             expense_offenders_request: ExpenseOffendersRequestDTO
     ) -> List[CategoryVolume]:
         """Agrega a despesa liquidada por categoria no período, sem aplicar o recorte da Regra de Pareto."""
+        ...
+
+    async def aggregate_monthly_net_flow(
+            self,
+            savings_capacity_request: SavingsCapacityRequestDTO
+    ) -> List[MonthlyNetFlow]:
+        """Agrega receita e despesa liquidadas por mês na janela de observação, sem inferir capacidade."""
         ...

@@ -6,10 +6,10 @@ from typing import List, Optional, Tuple
 import pytest
 
 from app.domain.entities import Transaction
-from app.application.dto import ExpenseOffendersRequestDTO
 from app.domain.exceptions.transaction_exceptions import InvalidPeriodError
+from app.application.dto import ExpenseOffendersRequestDTO, SavingsCapacityRequestDTO
 from app.application.usecases.analytics.get_expense_offenders import GetExpenseOffendersUseCase
-from app.domain.value_objects import CategoryVolume, ConsolidatedBalance, ExpenseRanking, ParetoPolicy
+from app.domain.value_objects import CategoryVolume, ConsolidatedBalance, ExpenseRanking, MonthlyNetFlow, ParetoPolicy
 from app.application.dto import (
     GetTransactionRequestDTO,
     ListTransactionsRequestDTO,
@@ -92,6 +92,14 @@ class FakeTransactionRepository:
         self.received = expense_offenders_request
 
         return self._volumes
+
+    async def aggregate_monthly_net_flow(
+            self,
+            savings_capacity_request: SavingsCapacityRequestDTO
+    ) -> List[MonthlyNetFlow]:
+        _ = self, savings_capacity_request
+
+        return []
 
 
 def test_pareto_policy_matches_categories_ignoring_case_and_accents() -> None:

@@ -1,3 +1,4 @@
+from .goal import Goal
 from .asset import Asset
 from .partner import Partner
 from .receipt import Receipt
@@ -37,5 +38,8 @@ __all__ = [
 
     # Subscription
     "Subscription",
-    "SubscriptionNotification"
+    "SubscriptionNotification",
+
+    # Goal
+    "Goal"
 ]

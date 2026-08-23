@@ -16,6 +16,13 @@ from app.domain.exceptions.transaction_exceptions import (
     TransactionNotEditableError,
     TransactionNotUnderReviewError
 )
+from app.domain.exceptions.goal_exceptions import (
+    GoalError,
+    GoalNotFoundError,
+    GoalOwnerNotFoundError,
+    InvalidGoalTargetError,
+    InvalidGoalHorizonError
+)
 from app.domain.exceptions.asset_exceptions import (
     AssetError,
     AssetNotFoundError,
@@ -85,6 +92,13 @@ _ASSET_PROBLEM: Dict[type, Tuple[int, str]] = {
     AssetNotFoundError: (status.HTTP_404_NOT_FOUND, "Bem patrimonial não encontrado."),
     InvalidAssetValuationError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Valoração do bem inválida."),
     InvalidAcquisitionDateError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Data de aquisição inválida.")
+}
+
+_GOAL_PROBLEM: Dict[type, Tuple[int, str]] = {
+    GoalOwnerNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado."),
+    GoalNotFoundError: (status.HTTP_404_NOT_FOUND, "Meta financeira não encontrada."),
+    InvalidGoalTargetError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Valor alvo inválido."),
+    InvalidGoalHorizonError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Prazo da meta inválido.")
 }
 
 _ASSISTANT_PROBLEM: Dict[type, Tuple[int, str]] = {
@@ -159,6 +173,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AssetError)
     async def _asset_error(request: Request, exc: AssetError) -> JSONResponse:
         status_code, title = _ASSET_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
+        )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
+
+    @app.exception_handler(GoalError)
+    async def _goal_error(request: Request, exc: GoalError) -> JSONResponse:
+        status_code, title = _GOAL_PROBLEM.get(
             type(exc),
             (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
         )

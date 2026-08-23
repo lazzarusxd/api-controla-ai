@@ -362,6 +362,33 @@ class ServiceSettings(BaseSettings):
         )
     ]
 
+    GOAL_ANNUAL_RISK_FREE_RATE: float = Field(
+        default=0.1075,
+        ge=0.0,
+        le=1.0,
+        description="Taxa livre de risco anual usada na simulação de metas, em forma decimal. "
+                    "A taxa mensal é derivada por equivalência composta, nunca por divisão por doze.",
+        examples=[0.1075]
+    )
+
+    GOAL_MAX_PROJECTION_MONTHS: int = Field(
+        default=600,
+        ge=1,
+        le=99999,
+        description="Horizonte máximo projetável para uma meta. Serve de teto quando a capacidade de "
+                    "poupança observada é nula ou negativa e a série não converge.",
+        examples=[600]
+    )
+
+    GOAL_CAPACITY_LOOKBACK_MONTHS: int = Field(
+        default=6,
+        ge=1,
+        le=60,
+        description="Meses de histórico observados na inferência da capacidade de poupança. Janela "
+                    "curta reage rápido a mudanças de renda; janela longa suaviza sazonalidade.",
+        examples=[6]
+    )
+
     SUBSCRIPTION_ALERT_LEAD_DAYS: int = Field(
         default=3,
         ge=0,
