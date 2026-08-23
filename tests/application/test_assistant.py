@@ -78,7 +78,6 @@ class FakeEmbeddingProvider(IEmbeddingProvider):
 
 
 class FakeEmbeddingRepository(IEmbeddingRepository):
-    """Simula a base vetorial já sob os filtros da RN011: o que não é do escopo não existe."""
 
     def __init__(
             self,

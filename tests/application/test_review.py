@@ -10,7 +10,7 @@ from app.domain.value_objects import ConsolidatedBalance
 from app.application.interfaces import ITransactionRepository
 from app.domain.types import ReviewDecision, TransactionStatus, TransactionType
 from app.application.usecases.transactions.review_transaction import ReviewTransactionUseCase
-from app.application.dto.transaction import (
+from app.application.dto import (
     GetTransactionRequestDTO,
     ListTransactionsRequestDTO,
     CreateTransactionRequestDTO,
