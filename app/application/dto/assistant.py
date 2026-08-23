@@ -57,7 +57,7 @@ class AssistantAnswerDTO:
 
 @dataclass(frozen=True, slots=True)
 class RetrieveContextRequestDTO:
-    """Entrada da recuperação semântica. Parceiro e usuário são filtros imutáveis (RN011)."""
+    """Entrada da recuperação semântica. Parceiro e usuário são filtros imutáveis."""
     user_id: UUID
     question: str
     partner_id: UUID

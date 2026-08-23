@@ -92,7 +92,7 @@ class AssistantAnswerResponse(BaseModel):
     status: AssistantAnswerStatus = Field(
         default=...,
         description="`ANSWERED` houve contexto e geração. `NO_CONTEXT` nenhum trecho do histórico "
-                    "satisfez os filtros da RN011 e o modelo não foi acionado.",
+                    "satisfez os filtros e o modelo não foi acionado.",
         examples=[AssistantAnswerStatus.ANSWERED]
     )
     answer: str = Field(

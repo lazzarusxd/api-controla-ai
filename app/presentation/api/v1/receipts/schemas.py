@@ -87,7 +87,7 @@ class ReceiptResponse(BaseModel):
     confidence_score: Optional[ConfidenceScore] = Field(
         default=...,
         description="Índice composto entre a leitura óptica e a validação semântica. Abaixo do limiar "
-                    "da RN004, o lançamento nasce pendente de revisão. Nulo enquanto não processado.",
+                    "de confiança, o lançamento nasce pendente de revisão. Nulo enquanto não processado.",
         examples=[0.91]
     )
     raw_text: Optional[str] = Field(

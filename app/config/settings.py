@@ -312,7 +312,7 @@ class ServiceSettings(BaseSettings):
         default=0.0167,
         ge=0.0,
         le=1.0,
-        description="Taxa de depreciação mensal aplicada a veículos no cálculo do CET (RN006).",
+        description="Taxa de depreciação mensal aplicada a veículos no cálculo do CET.",
         examples=[0.0167]
     )
 
@@ -331,6 +331,36 @@ class ServiceSettings(BaseSettings):
         description="Taxa de depreciação mensal aplicada aos demais bens duráveis.",
         examples=[0.0083]
     )
+
+    PARETO_CUTOFF_RATIO: float = Field(
+        default=0.8,
+        ge=0.5,
+        le=1.0,
+        description="Participação acumulada que delimita os poucos vitais no ranqueamento de ofensores.",
+        examples=[0.8]
+    )
+
+    PARETO_ESSENTIAL_CATEGORIES: Annotated[
+        List[str],
+        NoDecode,
+        Field(
+            default_factory=lambda: [
+                "Moradia",
+                "Aluguel",
+                "Condomínio",
+                "Energia Elétrica",
+                "Água e Esgoto",
+                "Gás",
+                "Internet",
+                "Plano de Saúde",
+                "Educação"
+            ],
+            description="Categorias tratadas como Despesas Fixas Essenciais e excluídas do ranqueamento. "
+                        "Aceita lista separada por vírgula na variável de ambiente. O confronto é feito "
+                        "sobre forma normalizada, sem sensibilidade a caixa ou acentuação.",
+            examples=[["Moradia", "Energia Elétrica", "Água e Esgoto"]]
+        )
+    ]
 
     SUBSCRIPTION_ALERT_LEAD_DAYS: int = Field(
         default=3,
@@ -376,6 +406,15 @@ class ServiceSettings(BaseSettings):
     @field_validator("RECEIPT_ALLOWED_MIME", mode="before")
     @classmethod
     def _split_mime_list(cls, value: object) -> object:
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+
+        return value
+
+    # noinspection PyNestedDecorators
+    @field_validator("PARETO_ESSENTIAL_CATEGORIES", mode="before")
+    @classmethod
+    def _split_essential_categories(cls, value: object) -> object:
         if isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
 

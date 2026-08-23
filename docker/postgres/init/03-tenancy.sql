@@ -1,11 +1,11 @@
 -- =============================================================================
--- 03-tenancy.sql — parceiros, credenciais OAuth 2.0, refresh tokens e usuários
+-- 03-tenancy.sql, parceiros, credenciais OAuth 2.0, refresh tokens e usuários
 -- Cobre RN001 (autenticação) e RN002 (isolamento de parceiro).
 -- =============================================================================
 SET search_path TO controla_ai, public;
 
 -- -----------------------------------------------------------------------------
--- PARTNERS — raiz do agregado de tenancy
+-- PARTNERS, raiz do agregado de tenancy
 -- -----------------------------------------------------------------------------
 CREATE TABLE partners (
     partner_id  uuid         NOT NULL DEFAULT uuid_generate_v7(),
@@ -26,7 +26,7 @@ CREATE TRIGGER tg_partners_updated_at
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- CREDENTIALS — pares client_id/client_secret do OAuth 2.0 (RFC 6749)
+-- CREDENTIALS, pares client_id/client_secret do OAuth 2.0 (RFC 6749)
 -- -----------------------------------------------------------------------------
 CREATE TABLE credentials (
     credential_id       uuid         NOT NULL DEFAULT uuid_generate_v7(),
@@ -47,7 +47,7 @@ COMMENT ON COLUMN credentials.client_secret_hash IS
 CREATE INDEX ix_credentials_partner ON credentials (partner_id);
 
 -- -----------------------------------------------------------------------------
--- REFRESH_TOKENS — rotação de refresh token (RFC 6749, seção 10.4)
+-- REFRESH_TOKENS, rotação de refresh token (RFC 6749, seção 10.4)
 -- -----------------------------------------------------------------------------
 CREATE TABLE refresh_tokens (
     token_id    uuid         NOT NULL DEFAULT uuid_generate_v7(),
@@ -75,7 +75,7 @@ CREATE INDEX ix_refresh_tokens_active
 CREATE INDEX ix_refresh_tokens_expires_at ON refresh_tokens (expires_at);
 
 -- -----------------------------------------------------------------------------
--- USERS — consumidores finais, sempre subordinados a um parceiro
+-- USERS, consumidores finais, sempre subordinados a um parceiro
 -- -----------------------------------------------------------------------------
 CREATE TABLE users (
     user_id     uuid         NOT NULL DEFAULT uuid_generate_v7(),

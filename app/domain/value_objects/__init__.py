@@ -1,10 +1,12 @@
 from .billing_cycle import BillingCycle
 from .context_chunk import ContextChunk
+from .pareto_policy import ParetoPolicy
 from .ownership_cost import OwnershipCost
 from .retrieved_context import RetrievedContext
 from .depreciation_policy import DepreciationPolicy
 from .consolidated_balance import ConsolidatedBalance
 from .authenticated_partner import AuthenticatedPartner
+from .expense_ranking import CategoryVolume, ExpenseRanking, RankedCategory
 from .extraction_confidence import ExtractionConfidence, ExtractionConfidenceWeights
 
 
@@ -28,5 +30,11 @@ __all__ = [
     "DepreciationPolicy",
 
     # Subscription
-    "BillingCycle"
+    "BillingCycle",
+
+    # Analytics
+    "ParetoPolicy",
+    "CategoryVolume",
+    "ExpenseRanking",
+    "RankedCategory"
 ]

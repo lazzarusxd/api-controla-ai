@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class AssetType(str, Enum):
-    """Natureza do bem durável, determinante da curva de depreciação aplicada (RN006)."""
+    """Natureza do bem durável, determinante da curva de depreciação aplicada."""
 
     # Veículo automotor, sujeito a IPVA e à depreciação mais acentuada do domínio.
     VEHICLE = "VEHICLE"

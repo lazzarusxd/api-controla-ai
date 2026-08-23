@@ -5,7 +5,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 @dataclass(frozen=True, slots=True)
 class OwnershipCost:
-    """Custo Efetivo Total mensal de manter um bem: imposto fracionado mais depreciação (RN006)."""
+    """Custo Efetivo Total mensal de manter um bem: imposto fracionado mais depreciação."""
     market_value: Decimal
     annual_taxes: Decimal
     monthly_depreciation_rate: Decimal

@@ -29,5 +29,5 @@ class AssistantAnswerStatus(str, Enum):
     # Houve contexto recuperado e o modelo generativo produziu a resposta.
     ANSWERED = "ANSWERED"
 
-    # Nenhum contexto satisfez os filtros da RN011. O modelo não foi acionado.
+    # Nenhum contexto satisfez os filtros. O modelo não foi acionado.
     NO_CONTEXT = "NO_CONTEXT"

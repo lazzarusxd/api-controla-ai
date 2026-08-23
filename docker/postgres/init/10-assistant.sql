@@ -1,5 +1,5 @@
 -- =============================================================================
--- 10-assistant.sql — histórico do assistente financeiro (RF010, RN011)
+-- 10-assistant.sql, histórico do assistente financeiro (RF010, RN011)
 -- =============================================================================
 SET search_path TO controla_ai, public;
 

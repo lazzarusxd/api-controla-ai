@@ -31,7 +31,7 @@ router = APIRouter(prefix="/partners", tags=["Parceiros"])
                 "idempotente conforme a RFC 9110 §9.3.4: repetir a mesma chamada deixa o servidor no "
                 "mesmo estado. O segredo de assinatura é emitido apenas no primeiro registro e vem em "
                 "`secret`; nas atualizações seguintes o campo volta nulo, porque o segredo vigente é "
-                "preservado — corrigir a URL não derruba a verificação que o parceiro já mantém em "
+                "preservado, corrigir a URL não derruba a verificação que o parceiro já mantém em "
                 "produção. Para trocar o segredo de propósito, use `POST /v1/partners/webhook/rotate-secret`. "
                 "Cada notificação leva o cabeçalho `X-ControlaAI-Signature` no formato `t={timestamp},v1={hmac}`, "
                 "onde o HMAC-SHA256 é calculado sobre `{timestamp}.{corpo_bruto}` com o segredo do parceiro. "
@@ -80,7 +80,7 @@ async def register_partner_webhook(
     summary="Emite um novo segredo de assinatura para o callback.",
     description="Substitui o segredo usado na assinatura das notificações. É um `POST` justamente por não "
                 "ser idempotente: cada chamada produz um segredo diferente, o que a RFC 9110 §9.3.4 "
-                "desqualifica como `PUT`. A troca é imediata e sem período de convivência — assinaturas "
+                "desqualifica como `PUT`. A troca é imediata e sem período de convivência, assinaturas "
                 "geradas com o segredo anterior deixam de validar assim que esta rota responde, então "
                 "atualize a verificação do seu lado antes de rotacionar. O valor aparece somente nesta "
                 "resposta. Cada notificação leva o cabeçalho `X-ControlaAI-Signature` no formato "

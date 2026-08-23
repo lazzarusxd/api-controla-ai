@@ -1,5 +1,5 @@
 -- =============================================================================
--- 09-webhooks.sql — destino de callback dos parceiros (RF003)
+-- 09-webhooks.sql, destino de callback dos parceiros (RF003)
 -- =============================================================================
 SET search_path TO controla_ai, public;
 

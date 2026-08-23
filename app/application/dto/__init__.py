@@ -1,3 +1,4 @@
+from .analytics import ExpenseOffendersDTO, ExpenseOffendersRequestDTO
 from .authentication import TokenPairDTO, RefreshSessionRequestDTO, ClientCredentialsRequestDTO
 from .transaction import (
     TransactionPageDTO,
@@ -141,5 +142,9 @@ __all__ = [
     "UpdateSubscriptionRequestDTO",
     "SubscriptionNotificationPageDTO",
     "ClaimSubscriptionNotificationRequestDTO",
-    "ListSubscriptionNotificationsRequestDTO"
+    "ListSubscriptionNotificationsRequestDTO",
+
+    # Analytics
+    "ExpenseOffendersDTO",
+    "ExpenseOffendersRequestDTO"
 ]

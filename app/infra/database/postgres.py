@@ -49,7 +49,7 @@ class PostgresPool:
     @property
     def pool(self) -> asyncpg.Pool:
         if self._pool is None:
-            raise RuntimeError("Pool PostgreSQL não inicializado — connect() não foi chamado.")
+            raise RuntimeError("Pool PostgreSQL não inicializado, connect() não foi chamado.")
         return self._pool
 
     @property

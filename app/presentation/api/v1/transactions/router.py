@@ -350,10 +350,10 @@ async def delete_transaction(
     response_model=TransactionResponse,
     operation_id="review-transaction-v1",
     summary="Revisa um lançamento extraído com baixa confiança de OCR.",
-    description="Fecha o ciclo da RN004. O lançamento gerado com `pending_review` verdadeiro está fora do saldo "
-                "de caixa e da projeção por competência até passar por aqui. `APPROVE` zera a marcação e o "
+    description="Fecha o ciclo do grau de confiança. O lançamento gerado com `pending_review` verdadeiro está fora do "
+                "saldo de caixa e da projeção por competência até passar por aqui. `APPROVE` zera a marcação e o "
                 "devolve aos regimes contábeis, admitindo correção dos campos que o modelo inferiu errado. "
-                "`REJECT` o leva a `CANCELED`, estado terminal que preserva o rastro do que o OCR entendeu — "
+                "`REJECT` o leva a `CANCELED`, estado terminal que preserva o rastro do que o OCR entendeu, "
                 "apagar o registro apagaria também a evidência da falha de extração. Lançamentos criados "
                 "manualmente não são revisáveis: não houve extração a validar.",
     responses={

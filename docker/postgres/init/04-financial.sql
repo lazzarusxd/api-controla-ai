@@ -1,11 +1,11 @@
 -- =============================================================================
--- 04-financial.sql — comprovantes, transações, assinaturas, patrimônio, metas e deduções fiscais
+-- 04-financial.sql, comprovantes, transações, assinaturas, patrimônio, metas e deduções fiscais
 -- Cobre RN002 a RN009. Toda tabela deste arquivo é tenant-scoped: a chave estrangeira composta (partner_id, user_id) impede vínculo entre parceiros.
 -- =============================================================================
 SET search_path TO controla_ai, public;
 
 -- -----------------------------------------------------------------------------
--- RECEIPTS — comprovantes enviados para ingestão via OCR (RF003)
+-- RECEIPTS, comprovantes enviados para ingestão via OCR (RF003)
 -- -----------------------------------------------------------------------------
 CREATE TABLE receipts (
     receipt_id       uuid          NOT NULL DEFAULT uuid_generate_v7(),
@@ -41,7 +41,7 @@ CREATE INDEX ix_receipts_user ON receipts (partner_id, user_id, created_at DESC)
 CREATE INDEX ix_receipts_pending ON receipts (created_at) WHERE status IN ('UPLOADED', 'PROCESSING');
 
 -- -----------------------------------------------------------------------------
--- TRANSACTIONS — lançamentos de entrada e saída (RF002, RN003, RN004)
+-- TRANSACTIONS, lançamentos de entrada e saída (RF002, RN003, RN004)
 -- -----------------------------------------------------------------------------
 CREATE TABLE transactions (
     transaction_id   uuid          NOT NULL DEFAULT uuid_generate_v7(),
@@ -96,7 +96,7 @@ CREATE TRIGGER tg_transactions_updated_at
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- SUBSCRIPTIONS — despesas recorrentes de valor fixo (RF004, RN005)
+-- SUBSCRIPTIONS, despesas recorrentes de valor fixo (RF004, RN005)
 -- -----------------------------------------------------------------------------
 CREATE TABLE subscriptions (
     subscription_id uuid          NOT NULL DEFAULT uuid_generate_v7(),
@@ -129,7 +129,7 @@ CREATE TRIGGER tg_subscriptions_updated_at
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- ASSETS — patrimônio e custo efetivo total mensal (RF005, RN006)
+-- ASSETS, patrimônio e custo efetivo total mensal (RF005, RN006)
 -- -----------------------------------------------------------------------------
 CREATE TABLE assets (
     asset_id              uuid          NOT NULL DEFAULT uuid_generate_v7(),
@@ -161,7 +161,7 @@ CREATE INDEX ix_assets_user ON assets (partner_id, user_id, asset_type);
 CREATE TRIGGER tg_assets_updated_at BEFORE UPDATE ON assets FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- GOALS — metas financeiras e simulação de viabilidade (RF007, RN008)
+-- GOALS, metas financeiras e simulação de viabilidade (RF007, RN008)
 -- -----------------------------------------------------------------------------
 CREATE TABLE goals (
     goal_id              uuid          NOT NULL DEFAULT uuid_generate_v7(),
@@ -195,7 +195,7 @@ CREATE TRIGGER tg_goals_updated_at
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- -----------------------------------------------------------------------------
--- TAX_DEDUCTIONS — consolidação de deduções por ano fiscal (RF008, RN009)
+-- TAX_DEDUCTIONS, consolidação de deduções por ano fiscal (RF008, RN009)
 -- -----------------------------------------------------------------------------
 CREATE TABLE tax_deductions (
     deduction_id    uuid          NOT NULL DEFAULT uuid_generate_v7(),
