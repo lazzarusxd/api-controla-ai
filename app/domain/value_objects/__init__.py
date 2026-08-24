@@ -7,6 +7,7 @@ from .contribution_plan import ContributionPlan
 from .retrieved_context import RetrievedContext
 from .depreciation_policy import DepreciationPolicy
 from .consolidated_balance import ConsolidatedBalance
+from .export_scope import ExportArtifact, ExportScope
 from .authenticated_partner import AuthenticatedPartner
 from .savings_capacity import MonthlyNetFlow, SavingsCapacity
 from .expense_ranking import CategoryVolume, ExpenseRanking, RankedCategory
@@ -45,5 +46,9 @@ __all__ = [
     "GoalPolicy",
     "MonthlyNetFlow",
     "SavingsCapacity",
-    "ContributionPlan"
+    "ContributionPlan",
+
+    # Export
+    "ExportScope",
+    "ExportArtifact"
 ]

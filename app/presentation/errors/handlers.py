@@ -50,6 +50,17 @@ from app.domain.exceptions.receipt_exceptions import (
     WebhookNotRegisteredError,
     UnsupportedReceiptTypeError
 )
+from app.domain.exceptions.export_exceptions import (
+    ExportError,
+    ExportNotReadyError,
+    EmptyExportScopeError,
+    DataExportNotFoundError,
+    InvalidExportPeriodError,
+    ExportOwnerNotFoundError,
+    ExportArtifactMissingError,
+    ExportGenerationFailedError,
+    UnsupportedExportFormatError
+)
 
 
 PROBLEM_JSON = "application/problem+json"
@@ -104,6 +115,17 @@ _GOAL_PROBLEM: Dict[type, Tuple[int, str]] = {
 _ASSISTANT_PROBLEM: Dict[type, Tuple[int, str]] = {
     EmptyQuestionError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Pergunta vazia."),
     AssistantUnavailableError: (status.HTTP_503_SERVICE_UNAVAILABLE, "Assistente indisponível.")
+}
+
+_EXPORT_PROBLEM: Dict[type, Tuple[int, str]] = {
+    ExportNotReadyError: (status.HTTP_409_CONFLICT, "Exportação em processamento."),
+    ExportOwnerNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado."),
+    DataExportNotFoundError: (status.HTTP_404_NOT_FOUND, "Exportação não encontrada."),
+    InvalidExportPeriodError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Período inválido."),
+    ExportArtifactMissingError: (status.HTTP_410_GONE, "Arquivo da exportação indisponível."),
+    EmptyExportScopeError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Escopo de exportação vazio."),
+    ExportGenerationFailedError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Geração da exportação falhou."),
+    UnsupportedExportFormatError: (status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Formato de exportação não suportado.")
 }
 
 
@@ -205,6 +227,15 @@ def register_exception_handlers(app: FastAPI) -> None:
             title="Regra de negócio violada.",
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT
         )
+
+    @app.exception_handler(ExportError)
+    async def _export_error(request: Request, exc: ExportError) -> JSONResponse:
+        status_code, title = _EXPORT_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
+        )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
