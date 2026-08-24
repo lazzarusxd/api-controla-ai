@@ -13,6 +13,7 @@ x-app-common: &app-common
   volumes:
     - ./docker/secrets:/run/secrets:ro
     - receipts-data:/var/lib/controlaai/receipts
+    - exports-data:/var/lib/controlaai/exports
   depends_on:
     postgres: { condition: service_healthy }
     redis:    { condition: service_healthy }
@@ -87,6 +88,7 @@ volumes:
   postgres-data:
   redis-data:
   receipts-data:
+  exports-data:
 
 networks:
   controla-ai-net:

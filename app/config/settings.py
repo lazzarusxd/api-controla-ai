@@ -389,6 +389,33 @@ class ServiceSettings(BaseSettings):
         examples=[6]
     )
 
+    EXPORT_PDF_MAX_ROWS_PER_SECTION: int = Field(
+        default=5000,
+        ge=100,
+        le=100000,
+        description="Teto de linhas por seção no relatório em PDF. Só o PDF trunca, porque é resumo "
+                    "legível; JSON e CSV são os formatos de portabilidade e saem sempre íntegros.",
+        examples=[5000]
+    )
+
+    EXPORT_STORAGE_ROOT: str = Field(
+        default="/var/lib/controlaai/exports",
+        description="Diretório raiz dos artefatos de exportação. Separado da raiz dos comprovantes: "
+                    "comprovante é dado enviado pelo titular e vive enquanto a conta viver, artefato de "
+                    "exportação é derivado e descartável.",
+        examples=["/var/lib/controlaai/exports"]
+    )
+
+    EXPORT_RETENTION_SECONDS: int = Field(
+        default=86400,
+        ge=300,
+        le=604800,
+        description="Prazo de retenção do artefato e do metadado da exportação, que expiram juntos. "
+                    "Janela curta é decisão de privacidade: o pacote concentra o dossiê financeiro "
+                    "inteiro do titular em um único arquivo.",
+        examples=[86400]
+    )
+
     SUBSCRIPTION_ALERT_LEAD_DAYS: int = Field(
         default=3,
         ge=0,

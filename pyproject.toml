@@ -13,6 +13,7 @@ dependencies = [
     "pgvector==0.5.0",
     "jwcrypto==1.5.8",
     "asyncpg==0.31.0",
+    "reportlab==4.4.0",
     "gunicorn==26.0.0",
     "fastapi==0.141.1",
     "pydantic==2.13.4",
@@ -92,7 +93,7 @@ disallow_untyped_defs = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["pgvector.*", "pytesseract.*", "pdf2image.*"]
+module = ["pgvector.*", "pytesseract.*", "pdf2image.*", "reportlab.*"]
 ignore_missing_imports = true
 
 # ─── pytest ──────────────────────────────────────────────────

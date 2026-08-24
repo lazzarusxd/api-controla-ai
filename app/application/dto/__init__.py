@@ -80,6 +80,18 @@ from .goal import (
     GoalViabilityRequestDTO,
     SavingsCapacityRequestDTO
 )
+from .export import (
+    ExportPackageDTO,
+    ExportSectionDTO,
+    SerializedExportDTO,
+    DataExportResultDTO,
+    DataExportContentDTO,
+    GetDataExportRequestDTO,
+    ExportPackageRequestDTO,
+    RequestDataExportRequestDTO,
+    GenerateDataExportRequestDTO,
+    DownloadDataExportRequestDTO
+)
 
 
 __all__ = [
@@ -160,15 +172,15 @@ __all__ = [
     "ExpenseOffendersDTO",
     "ExpenseOffendersRequestDTO",
 
-    # Goal
-    "GoalPageDTO",
-    "GoalViabilityDTO",
-    "GetGoalRequestDTO",
-    "ListGoalsRequestDTO",
-    "CreateGoalRequestDTO",
-    "DeleteGoalRequestDTO",
-    "UpdateGoalRequestDTO",
-    "PersistGoalRequestDTO",
-    "GoalViabilityRequestDTO",
-    "SavingsCapacityRequestDTO"
+    # Export
+    "ExportPackageDTO",
+    "ExportSectionDTO",
+    "SerializedExportDTO",
+    "DataExportResultDTO",
+    "DataExportContentDTO",
+    "GetDataExportRequestDTO",
+    "ExportPackageRequestDTO",
+    "RequestDataExportRequestDTO",
+    "GenerateDataExportRequestDTO",
+    "DownloadDataExportRequestDTO"
 ]

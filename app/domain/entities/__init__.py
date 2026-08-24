@@ -3,6 +3,7 @@ from .asset import Asset
 from .partner import Partner
 from .receipt import Receipt
 from .credential import Credential
+from .data_export import DataExport
 from .transaction import Transaction
 from .subscription import Subscription
 from .refresh_token import RefreshToken
@@ -41,5 +42,8 @@ __all__ = [
     "SubscriptionNotification",
 
     # Goal
-    "Goal"
+    "Goal",
+
+    # Export
+    "DataExport"
 ]

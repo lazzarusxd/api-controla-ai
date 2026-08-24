@@ -1,10 +1,14 @@
 from .i_job_queue import IJobQueue
 from .i_ocr_engine import IOcrEngine
 from .i_secret_hasher import ISecretHasher
-from .i_receipt_storage import IReceiptStorage
+from .i_export_storage import IExportStorage
 from .i_goal_repository import IGoalRepository
+from .i_export_registry import IExportRegistry
+from .i_receipt_storage import IReceiptStorage
 from .i_asset_repository import IAssetRepository
 from .i_webhook_notifier import IWebhookNotifier
+from .i_export_serializer import IExportSerializer
+from .i_export_repository import IExportRepository
 from .i_receipt_extractor import IReceiptExtractor
 from .i_partner_repository import IPartnerRepository
 from .i_receipt_repository import IReceiptRepository
@@ -26,10 +30,14 @@ __all__ = [
     "IJobQueue",
     "IOcrEngine",
     "ISecretHasher",
+    "IExportStorage",
     "IGoalRepository",
+    "IExportRegistry",
     "IReceiptStorage",
     "IWebhookNotifier",
     "IAssetRepository",
+    "IExportRepository",
+    "IExportSerializer",
     "IReceiptExtractor",
     "IPartnerRepository",
     "IAccessTokenIssuer",
