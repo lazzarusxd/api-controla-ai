@@ -1,4 +1,5 @@
 from .analytics import ExpenseOffendersDTO, ExpenseOffendersRequestDTO
+from .erasure import AccountErasureResultDTO, ErasedAccountDTO, EraseAccountRequestDTO
 from .authentication import TokenPairDTO, RefreshSessionRequestDTO, ClientCredentialsRequestDTO
 from .transaction import (
     TransactionPageDTO,
@@ -182,5 +183,10 @@ __all__ = [
     "ExportPackageRequestDTO",
     "RequestDataExportRequestDTO",
     "GenerateDataExportRequestDTO",
-    "DownloadDataExportRequestDTO"
+    "DownloadDataExportRequestDTO",
+
+    # Erasure
+    "ErasedAccountDTO",
+    "EraseAccountRequestDTO",
+    "AccountErasureResultDTO"
 ]
