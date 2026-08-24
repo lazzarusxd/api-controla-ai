@@ -1,5 +1,6 @@
 from .asset import AssetType
 from .webhook import WebhookEvent
+from .erasure import ErasedResource
 from .subscription import SubscriptionEvent
 from .oauth import OAuthErrorCode, TokenType, GrantType
 from .transaction import TransactionType, TransactionStatus
@@ -40,5 +41,8 @@ __all__ = [
     "ExportEvent",
     "ExportFormat",
     "ExportStatus",
-    "ExportSection"
+    "ExportSection",
+
+    # Erasure
+    "ErasedResource"
 ]

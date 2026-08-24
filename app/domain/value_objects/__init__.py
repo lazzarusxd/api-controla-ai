@@ -10,6 +10,7 @@ from .consolidated_balance import ConsolidatedBalance
 from .export_scope import ExportArtifact, ExportScope
 from .authenticated_partner import AuthenticatedPartner
 from .savings_capacity import MonthlyNetFlow, SavingsCapacity
+from .erasure_manifest import ErasedRecordCount, ErasureManifest
 from .expense_ranking import CategoryVolume, ExpenseRanking, RankedCategory
 from .extraction_confidence import ExtractionConfidence, ExtractionConfidenceWeights
 
@@ -50,5 +51,9 @@ __all__ = [
 
     # Export
     "ExportScope",
-    "ExportArtifact"
+    "ExportArtifact",
+
+    # Erasure
+    "ErasureManifest",
+    "ErasedRecordCount"
 ]

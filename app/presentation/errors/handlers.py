@@ -61,6 +61,12 @@ from app.domain.exceptions.export_exceptions import (
     ExportGenerationFailedError,
     UnsupportedExportFormatError
 )
+from app.domain.exceptions.erasure_exceptions import (
+    ErasureError,
+    AccountNotFoundError,
+    ErasureNotConfirmedError,
+    InvalidErasureManifestError
+)
 
 
 PROBLEM_JSON = "application/problem+json"
@@ -126,6 +132,12 @@ _EXPORT_PROBLEM: Dict[type, Tuple[int, str]] = {
     EmptyExportScopeError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Escopo de exportação vazio."),
     ExportGenerationFailedError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Geração da exportação falhou."),
     UnsupportedExportFormatError: (status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Formato de exportação não suportado.")
+}
+
+_ERASURE_PROBLEM: Dict[type, Tuple[int, str]] = {
+    AccountNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado."),
+    InvalidErasureManifestError: (status.HTTP_500_INTERNAL_SERVER_ERROR, "Erro interno do servidor."),
+    ErasureNotConfirmedError: (status.HTTP_428_PRECONDITION_REQUIRED, "Confirmação de eliminação ausente.")
 }
 
 
@@ -231,6 +243,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(ExportError)
     async def _export_error(request: Request, exc: ExportError) -> JSONResponse:
         status_code, title = _EXPORT_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
+        )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
+
+    @app.exception_handler(ErasureError)
+    async def _erasure_error(request: Request, exc: ErasureError) -> JSONResponse:
+        status_code, title = _ERASURE_PROBLEM.get(
             type(exc),
             (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
         )

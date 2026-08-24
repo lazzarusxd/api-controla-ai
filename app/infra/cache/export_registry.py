@@ -1,20 +1,21 @@
 import json
 from uuid import UUID
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from datetime import date, datetime, timezone
 
 from app.domain.entities import DataExport
 from app.config.logging_setup import logger
 from app.infra.cache.redis_client import RedisClient
-from app.application.interfaces import IExportRegistry
 from app.application.dto import GetDataExportRequestDTO
 from app.domain.value_objects import ExportArtifact, ExportScope
+from app.application.interfaces import IExportPurger, IExportRegistry
 from app.domain.types import ExportFormat, ExportSection, ExportStatus
 
 
-class RedisExportRegistry(IExportRegistry):
+class RedisExportRegistry(IExportRegistry, IExportPurger):
 
     def __init__(self, redis_client: RedisClient, retention_seconds: int) -> None:
+        self._scan_batch_size = 200
         self._redis_client = redis_client
         self._retention_seconds = retention_seconds
 
@@ -52,6 +53,37 @@ class RedisExportRegistry(IExportRegistry):
         await self._write(data_export=data_export, ttl_seconds=remaining)
 
         return data_export
+
+    async def purge_user(self, partner_id: UUID, user_id: UUID) -> List[str]:
+        keys: List[str] = []
+        file_paths: List[str] = []
+
+        async for key in self._redis_client.cache.scan_iter(
+                count=self._scan_batch_size,
+                match=f"export:{partner_id}:{user_id}:*"
+        ):
+            keys.append(key)
+
+        for key in keys:
+            raw = await self._redis_client.cache.get(key)
+
+            if raw is not None:
+                artifact = self._to_entity(payload=json.loads(raw)).artifact
+
+                if artifact is not None:
+                    file_paths.append(artifact.file_path)
+
+            await self._redis_client.cache.delete(key)
+
+        logger.info(
+            "data_export_state_purged",
+            user_id=str(user_id),
+            total_keys=len(keys),
+            partner_id=str(partner_id),
+            total_artifacts=len(file_paths)
+        )
+
+        return file_paths
 
     async def _write(self, data_export: DataExport, ttl_seconds: int) -> None:
         await self._redis_client.cache.set(
