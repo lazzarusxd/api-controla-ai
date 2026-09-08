@@ -1,7 +1,8 @@
-import unicodedata
 from decimal import Decimal
 from dataclasses import dataclass
 from typing import ClassVar, FrozenSet, Iterable
+
+from app.domain.value_objects.text_normalization import normalize_label
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,7 +34,4 @@ class ParetoPolicy:
     @staticmethod
     def normalize(category: str) -> str:
         """Texto livre digitado por integradores distintos escreve o mesmo conceito de três formas."""
-        decomposed = unicodedata.normalize("NFKD", category)
-        without_accents = "".join(char for char in decomposed if not unicodedata.combining(char))
-
-        return " ".join(without_accents.casefold().split())
+        return normalize_label(category)

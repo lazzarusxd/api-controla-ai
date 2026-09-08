@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from app.presentation.api.v1.tax.router import router as tax_router
 from app.presentation.api.v1.goals.router import router as goals_router
 from app.presentation.api.v1.health.router import router as health_router
 from app.presentation.api.v1.assets.router import router as assets_router
@@ -39,3 +40,5 @@ router.include_router(goals_router, prefix="/v1")
 router.include_router(exports_router, prefix="/v1")
 
 router.include_router(accounts_router, prefix="/v1")
+
+router.include_router(tax_router, prefix="/v1")

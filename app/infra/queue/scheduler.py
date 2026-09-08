@@ -10,6 +10,7 @@ from app.infra.queue.settings import build_redis_settings
 from app.config.logging_setup import configure_logging, logger
 from app.infra.queue.tasks.index_pending_context import index_pending_context
 from app.infra.queue.tasks.notify_due_subscriptions import notify_due_subscriptions
+from app.infra.queue.tasks.consolidate_tax_deductions import consolidate_tax_deductions
 
 
 def _build_cron_jobs() -> List[Any]:
@@ -28,6 +29,13 @@ def _build_cron_jobs() -> List[Any]:
         cron(
             cast(WorkerCoroutine, notify_due_subscriptions),
             hour={settings.SUBSCRIPTION_NOTIFY_CRON_HOUR},
+            minute={0},
+            run_at_startup=False,
+            unique=True
+        ),
+        cron(
+            cast(WorkerCoroutine, consolidate_tax_deductions),
+            hour={settings.TAX_CONSOLIDATION_CRON_HOUR},
             minute={0},
             run_at_startup=False,
             unique=True

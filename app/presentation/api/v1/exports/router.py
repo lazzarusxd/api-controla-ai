@@ -1,18 +1,30 @@
 from uuid import UUID
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path, Response, status
+from fastapi import APIRouter, Depends, Path, Query, Response, status
 
 from app.presentation.errors.schemas import ProblemDetailResponse
 from app.presentation.api.v1.authentication.schemas import OAuthErrorResponse
 from app.presentation.api.v1.authentication.dependencies import CurrentPartner
 from app.application.usecases.exports.get_data_export import GetDataExportUseCase
+from app.application.usecases.exports.list_data_exports import ListDataExportsUseCase
 from app.application.usecases.exports.request_data_export import RequestDataExportUseCase
 from app.application.usecases.exports.download_data_export import DownloadDataExportUseCase
-from app.presentation.api.v1.exports.schemas import DataExportResponse, RequestDataExportRequest
-from app.application.dto import GetDataExportRequestDTO, RequestDataExportRequestDTO, DownloadDataExportRequestDTO
+from app.presentation.api.v1.exports.schemas import (
+    DataExportResponse,
+    RequestDataExportRequest,
+    DataExportHistoryResponse,
+    ListDataExportsQueryParameters
+)
+from app.application.dto import (
+    GetDataExportRequestDTO,
+    ListDataExportsRequestDTO,
+    RequestDataExportRequestDTO,
+    DownloadDataExportRequestDTO
+)
 from app.presentation.api.v1.exports.dependencies import (
     get_data_export_usecase,
+    get_list_data_exports_usecase,
     get_request_data_export_usecase,
     get_download_data_export_usecase
 )
@@ -105,6 +117,59 @@ async def request_data_export(
     response.headers["Location"] = f"/v1/users/{user_id}/exports/{data_export.export_id}"
 
     return DataExportResponse.from_entity(data_export)
+
+
+@router.get(
+    path="",
+    operation_id="list-data-exports-v1",
+    response_model=DataExportHistoryResponse,
+    summary="Lista as solicitações de exportação do usuário.",
+    description="Devolve o histórico de solicitações de portabilidade do titular, da mais recente para "
+                "a mais antiga, com o estágio e o artefato de cada uma.\n\n"
+                "O histórico alcança a janela de retenção, e não a vida inteira da conta: metadado e "
+                "artefato expiram juntos, por decisão tomada no aceite. Manter o metadado além do "
+                "arquivo produziria um catálogo permanente de quando cada titular pediu seu dossiê "
+                "financeiro, o que é informação sobre a pessoa, não sobre o arquivo. O registro perene "
+                "de que houve exportação continua no log de auditoria, que guarda o ato e não o "
+                "conteúdo.\n\n"
+                "Serve ao acompanhamento operacional do integrador, que precisa saber o que já pediu "
+                "antes de pedir de novo, e à conformidade do atendimento ao direito de portabilidade: "
+                "sem esta rota, uma exportação cujo identificador o parceiro tenha perdido seria "
+                "invisível até expirar.\n\n"
+                "Usuário sem solicitação alguma devolve `200` com `items` vazio, não `404`.",
+    responses={
+        200: {
+            "model": DataExportHistoryResponse,
+            "description": "Solicitações vivas do titular, ordenadas da mais recente para a mais antiga."
+        },
+        401: {
+            "model": OAuthErrorResponse,
+            "description": "Access token ausente, malformado, indecifrável ou expirado. O corpo segue o formato de "
+                           "erro da RFC 6749 (`error` e `error_description`), não `problem+json`, e a resposta "
+                           "acompanha o cabeçalho `WWW-Authenticate` conforme a RFC 6750."
+        },
+        422: {
+            "model": ProblemDetailResponse,
+            "description": "Parâmetros de consulta fora do contrato. `title` vale `Corpo da requisição inválido.`."
+        }
+    }
+)
+async def list_data_exports(
+        user_id: UserIdPath,
+        current_partner: CurrentPartner,
+        list_data_exports_query: ListDataExportsQueryParameters = Query(),
+        list_data_exports_usecase: ListDataExportsUseCase = Depends(get_list_data_exports_usecase)
+) -> DataExportHistoryResponse:
+    history = await list_data_exports_usecase.execute(
+        list_data_exports_request=ListDataExportsRequestDTO(
+            user_id=user_id,
+            limit=list_data_exports_query.limit,
+            status=list_data_exports_query.status,
+            partner_id=current_partner.partner_id
+        )
+    )
+
+    return DataExportHistoryResponse.from_dto(history)
 
 
 @router.get(

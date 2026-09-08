@@ -1,18 +1,18 @@
 import json
 from uuid import UUID
-from typing import Any, Dict, List, Optional
 from datetime import date, datetime, timezone
+from typing import Any, Dict, List, Optional, Union
 
 from app.domain.entities import DataExport
 from app.config.logging_setup import logger
 from app.infra.cache.redis_client import RedisClient
-from app.application.dto import GetDataExportRequestDTO
 from app.domain.value_objects import ExportArtifact, ExportScope
-from app.application.interfaces import IExportPurger, IExportRegistry
 from app.domain.types import ExportFormat, ExportSection, ExportStatus
+from app.application.dto import GetDataExportRequestDTO, ListDataExportsRequestDTO
+from app.application.interfaces import IExportLister, IExportPurger, IExportRegistry
 
 
-class RedisExportRegistry(IExportRegistry, IExportPurger):
+class RedisExportRegistry(IExportRegistry, IExportPurger, IExportLister):
 
     def __init__(self, redis_client: RedisClient, retention_seconds: int) -> None:
         self._scan_batch_size = 200
@@ -54,13 +54,39 @@ class RedisExportRegistry(IExportRegistry, IExportPurger):
 
         return data_export
 
+    async def list_by_user(self, list_data_exports_request: ListDataExportsRequestDTO) -> List[DataExport]:
+        data_exports: List[DataExport] = []
+
+        async for key in self._redis_client.cache.scan_iter(
+                count=self._scan_batch_size,
+                match=self._key(
+                    export_id="*",
+                    user_id=list_data_exports_request.user_id,
+                    partner_id=list_data_exports_request.partner_id
+                )
+        ):
+            raw = await self._redis_client.cache.get(key)
+
+            if raw is None:
+                continue
+
+            data_export = self._to_entity(payload=json.loads(raw))
+
+            if list_data_exports_request.status is not None:
+                if data_export.status is not list_data_exports_request.status:
+                    continue
+
+            data_exports.append(data_export)
+
+        return sorted(data_exports, key=lambda item: item.requested_at, reverse=True)
+
     async def purge_user(self, partner_id: UUID, user_id: UUID) -> List[str]:
         keys: List[str] = []
         file_paths: List[str] = []
 
         async for key in self._redis_client.cache.scan_iter(
                 count=self._scan_batch_size,
-                match=f"export:{partner_id}:{user_id}:*"
+                match=self._key(partner_id=partner_id, user_id=user_id, export_id="*")
         ):
             keys.append(key)
 
@@ -97,7 +123,7 @@ class RedisExportRegistry(IExportRegistry, IExportPurger):
         )
 
     @staticmethod
-    def _key(partner_id: UUID, user_id: UUID, export_id: UUID) -> str:
+    def _key(partner_id: UUID, user_id: UUID, export_id: Union[UUID, str]) -> str:
         return f"export:{partner_id}:{user_id}:{export_id}"
 
     @staticmethod

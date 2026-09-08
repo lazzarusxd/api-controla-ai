@@ -3,6 +3,7 @@ from .webhook import WebhookEvent
 from .erasure import ErasedResource
 from .subscription import SubscriptionEvent
 from .oauth import OAuthErrorCode, TokenType, GrantType
+from .tax import TaxableIncomeSource, TaxDeductionCategory
 from .transaction import TransactionType, TransactionStatus
 from .receipt import ReceiptStatus, ReceiptEvent, ReviewDecision
 from .assistant import AssistantAnswerStatus, EmbeddingSourceType
@@ -44,5 +45,9 @@ __all__ = [
     "ExportSection",
 
     # Erasure
-    "ErasedResource"
+    "ErasedResource",
+
+    # Tax
+    "TaxableIncomeSource",
+    "TaxDeductionCategory"
 ]

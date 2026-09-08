@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import List, Literal, Optional, Annotated
+from typing import Annotated, Dict, List, Literal, Optional
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict, NoDecode
@@ -416,6 +416,112 @@ class ServiceSettings(BaseSettings):
         examples=[86400]
     )
 
+    TAX_DEDUCTIBLE_HEALTH_CATEGORIES: Annotated[
+        List[str],
+        NoDecode,
+        Field(
+            default_factory=lambda: [
+                "Saúde",
+                "Plano de Saúde",
+                "Consulta Médica",
+                "Exames",
+                "Odontologia",
+                "Fisioterapia",
+                "Psicologia",
+                "Internação Hospitalar"
+            ],
+            description="Categorias enquadradas como despesa dedutível de saúde. Aceita lista separada "
+                        "por vírgula na variável de ambiente. O confronto é feito sobre forma normalizada, "
+                        "sem sensibilidade a caixa ou acentuação.",
+            examples=[["Saúde", "Plano de Saúde", "Odontologia"]]
+        )
+    ]
+
+    TAX_DEDUCTIBLE_EDUCATION_CATEGORIES: Annotated[
+        List[str],
+        NoDecode,
+        Field(
+            default_factory=lambda: [
+                "Educação",
+                "Mensalidade Escolar",
+                "Faculdade",
+                "Pós-Graduação",
+                "Creche",
+                "Ensino Técnico"
+            ],
+            description="Categorias enquadradas como despesa dedutível de instrução. Mesma normalização "
+                        "aplicada às categorias de saúde.",
+            examples=[["Educação", "Mensalidade Escolar", "Creche"]]
+        )
+    ]
+
+    TAX_EDUCATION_CEILING_BY_YEAR: Annotated[
+        Dict[int, float],
+        NoDecode,
+        Field(
+            default_factory=lambda: {2024: 3561.50, 2025: 3561.50, 2026: 3561.50},
+            description="Teto anual de dedução com instrução, por exercício, no formato "
+                        "`2026:3561.50,2025:3561.50`. Exercício não declarado herda o mais recente "
+                        "anterior a ele. Vive em configuração porque muda por ato da autoridade "
+                        "tributária, em cadência que não é a do deploy da API.",
+            examples=[{2026: 3561.50}]
+        )
+    ]
+
+    TAX_UNLIMITED_CEILING: float = Field(
+        default=9999999999999.99,
+        gt=0,
+        description="Teto sentinela aplicado às categorias sem limite legal, como saúde. Existe porque a "
+                    "coluna que registra o teto não admite nulo e a restrição que amarra o valor elegível "
+                    "ao menor entre declarado e teto depende disso. Deve exceder qualquer valor "
+                    "representável na coluna monetária.",
+        examples=[9999999999999.99]
+    )
+
+    TAX_ANNUAL_BRACKETS: Annotated[
+        List[str],
+        NoDecode,
+        Field(
+            default_factory=lambda: [
+                "2026:26963.20:0:0",
+                "2026:33919.80:0.075:2022.24",
+                "2026:45012.60:0.15:4566.23",
+                "2026:55976.16:0.225:7942.17",
+                "2026::0.275:10740.98"
+            ],
+            description="Tabela progressiva anual, uma faixa por entrada no formato "
+                        "`exercício:teto:alíquota:parcela a deduzir`. Teto vazio marca a faixa aberta. "
+                        "Aceita lista separada por vírgula na variável de ambiente.",
+            examples=[["2026:26963.20:0:0", "2026::0.275:10740.98"]]
+        )
+    ]
+
+    TAX_CONSOLIDATION_CRON_HOUR: int = Field(
+        default=3,
+        ge=0,
+        le=23,
+        description="Hora local da varredura diária de consolidação fiscal executada pelo scheduler.",
+        examples=[3]
+    )
+
+    TAX_CONSOLIDATION_BATCH_SIZE: int = Field(
+        default=500,
+        ge=1,
+        le=5000,
+        description="Pares de usuário e exercício reapurados por passada, por parceiro.",
+        examples=[500]
+    )
+
+    TAX_CONSOLIDATION_MAX_AGE_HOURS: int = Field(
+        default=24,
+        ge=1,
+        le=8760,
+        description="Idade a partir da qual uma consolidação é reapurada mesmo sem lançamento novo. "
+                    "Exclusão física de lançamento não deixa marca temporal, e é este teto que garante "
+                    "a convergência da consolidação depois dela.",
+        examples=[24]
+    )
+
     SUBSCRIPTION_ALERT_LEAD_DAYS: int = Field(
         default=3,
         ge=0,
@@ -462,6 +568,35 @@ class ServiceSettings(BaseSettings):
     def _split_mime_list(cls, value: object) -> object:
         if isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
+
+        return value
+
+    # noinspection PyNestedDecorators
+    @field_validator(
+        "TAX_ANNUAL_BRACKETS",
+        "TAX_DEDUCTIBLE_HEALTH_CATEGORIES",
+        "TAX_DEDUCTIBLE_EDUCATION_CATEGORIES",
+        mode="before"
+    )
+    @classmethod
+    def _split_tax_lists(cls, value: object) -> object:
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+
+        return value
+
+    # noinspection PyNestedDecorators
+    @field_validator("TAX_EDUCATION_CEILING_BY_YEAR", mode="before")
+    @classmethod
+    def _split_education_ceilings(cls, value: object) -> object:
+        """Aceita `2026:3561.50,2025:3561.50` na variável de ambiente."""
+        if isinstance(value, str):
+            entries = [item.strip() for item in value.split(",") if item.strip()]
+
+            return {
+                int(entry.split(":")[0]): float(entry.split(":")[1])
+                for entry in entries
+            }
 
         return value
 
