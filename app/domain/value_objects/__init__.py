@@ -5,14 +5,17 @@ from .pareto_policy import ParetoPolicy
 from .ownership_cost import OwnershipCost
 from .contribution_plan import ContributionPlan
 from .retrieved_context import RetrievedContext
+from .text_normalization import normalize_label
 from .depreciation_policy import DepreciationPolicy
 from .consolidated_balance import ConsolidatedBalance
 from .export_scope import ExportArtifact, ExportScope
 from .authenticated_partner import AuthenticatedPartner
 from .savings_capacity import MonthlyNetFlow, SavingsCapacity
 from .erasure_manifest import ErasedRecordCount, ErasureManifest
+from .tax_policy import ProgressiveTaxTable, TaxBracket, TaxPolicy
 from .expense_ranking import CategoryVolume, ExpenseRanking, RankedCategory
 from .extraction_confidence import ExtractionConfidence, ExtractionConfidenceWeights
+from .deduction_summary import CategoryDeduction, DeductionSummary, RefundProjection
 
 
 __all__ = [
@@ -55,5 +58,16 @@ __all__ = [
 
     # Erasure
     "ErasureManifest",
-    "ErasedRecordCount"
+    "ErasedRecordCount",
+
+    # Tax
+    "TaxPolicy",
+    "TaxBracket",
+    "RefundProjection",
+    "DeductionSummary",
+    "CategoryDeduction",
+    "ProgressiveTaxTable",
+
+    # Compartilhado
+    "normalize_label"
 ]

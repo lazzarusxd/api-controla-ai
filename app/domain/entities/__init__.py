@@ -7,6 +7,7 @@ from .data_export import DataExport
 from .transaction import Transaction
 from .subscription import Subscription
 from .refresh_token import RefreshToken
+from .tax_deduction import TaxDeduction
 from .partner_webhook import PartnerWebhook
 from .vector_embedding import VectorEmbedding
 from .assistant_message import AssistantMessage
@@ -45,5 +46,8 @@ __all__ = [
     "Goal",
 
     # Export
-    "DataExport"
+    "DataExport",
+
+    # Tax
+    "TaxDeduction"
 ]

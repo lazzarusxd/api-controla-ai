@@ -2,10 +2,29 @@ from uuid import UUID
 from typing import List, Optional
 from datetime import date, datetime
 
+from fastapi import Query
 from pydantic import BaseModel, Field
 
 from app.domain.entities import DataExport
+from app.application.dto import DataExportHistoryDTO
 from app.domain.types import ExportFormat, ExportSection, ExportStatus
+
+
+class ListDataExportsQueryParameters(BaseModel):
+    """Parâmetros de consulta aceitos no histórico de solicitações."""
+    status: Optional[ExportStatus] = Query(
+        default=None,
+        description="Restringe o histórico a um estágio. Ausente, devolve todas as solicitações vivas.",
+        examples=[ExportStatus.COMPLETED]
+    )
+    limit: int = Query(
+        default=50,
+        ge=1,
+        le=200,
+        description="Trunca a lista às solicitações mais recentes. `is_truncated` sinaliza quando o "
+                    "corte foi do limite, e não do fim da janela de retenção.",
+        examples=[50]
+    )
 
 
 class RequestDataExportRequest(BaseModel):
@@ -172,4 +191,42 @@ class DataExportResponse(BaseModel):
                 media_type=artifact.media_type,
                 total_records=artifact.total_records
             )
+        )
+
+
+class DataExportHistoryResponse(BaseModel):
+    """Histórico de solicitações de exportação do titular, limitado à janela de retenção."""
+    total: int = Field(
+        default=...,
+        description="Solicitações vivas que satisfazem o filtro, antes do truncamento por `limit`.",
+        examples=[3]
+    )
+    limit: int = Field(
+        default=...,
+        description="Limite aplicado à lista devolvida.",
+        examples=[50]
+    )
+    status: Optional[ExportStatus] = Field(
+        default=...,
+        description="Ecoa o filtro recebido, para que o consumidor distinga histórico completo de recorte.",
+        examples=[ExportStatus.COMPLETED]
+    )
+    is_truncated: bool = Field(
+        default=...,
+        description="Indica que a lista foi cortada pelo limite pedido, e não pelo fim da retenção.",
+        examples=[False]
+    )
+    items: List[DataExportResponse] = Field(
+        default=...,
+        description="Solicitações da mais recente para a mais antiga."
+    )
+
+    @classmethod
+    def from_dto(cls, data_export_history: DataExportHistoryDTO) -> "DataExportHistoryResponse":
+        return cls(
+            total=data_export_history.total,
+            limit=data_export_history.limit,
+            status=data_export_history.status,
+            is_truncated=data_export_history.is_truncated,
+            items=[DataExportResponse.from_entity(item) for item in data_export_history.items]
         )

@@ -8,7 +8,6 @@ ERASURE_CONFIRMATION_HEADER = "X-Confirm-Erasure"
 ErasureConfirmationHeader = Annotated[
     Optional[str],
     Header(
-        default=None,
         alias=ERASURE_CONFIRMATION_HEADER,
         description="Confirmação explícita da eliminação. Deve repetir exatamente o identificador do "
                     "usuário presente no caminho.\n\n"

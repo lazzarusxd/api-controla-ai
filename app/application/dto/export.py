@@ -3,6 +3,7 @@ from datetime import date, datetime
 from dataclasses import dataclass, field
 from typing import Any, Dict, FrozenSet, List, Optional
 
+from app.domain.entities import DataExport
 from app.domain.value_objects import ExportScope
 from app.domain.types import ExportEvent, ExportFormat, ExportSection, ExportStatus
 
@@ -24,6 +25,29 @@ class GetDataExportRequestDTO:
     user_id: UUID
     export_id: UUID
     partner_id: UUID
+
+
+@dataclass(frozen=True, slots=True)
+class ListDataExportsRequestDTO:
+    """Entrada do histórico de solicitações do titular, limitado à janela de retenção."""
+    user_id: UUID
+    partner_id: UUID
+    limit: int = 50
+    status: Optional[ExportStatus] = None
+
+
+@dataclass(frozen=True, slots=True)
+class DataExportHistoryDTO:
+    """Saída do histórico de solicitações, da mais recente para a mais antiga."""
+    total: int
+    limit: int
+    status: Optional[ExportStatus] = None
+    items: List[DataExport] = field(default_factory=list)
+
+    @property
+    def is_truncated(self) -> bool:
+        """Indica que a lista foi cortada pelo limite pedido, e não pelo fim da janela de retenção."""
+        return self.total > len(self.items)
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,8 +116,8 @@ class DataExportContentDTO:
     """Artefato pronto para entrega, com o que a resposta HTTP precisa carregar."""
     content: bytes
     file_name: str
-    media_type: str
     byte_size: int
+    media_type: str
     entity_tag: str
 
 

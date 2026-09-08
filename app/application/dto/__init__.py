@@ -87,11 +87,25 @@ from .export import (
     SerializedExportDTO,
     DataExportResultDTO,
     DataExportContentDTO,
+    DataExportHistoryDTO,
     GetDataExportRequestDTO,
     ExportPackageRequestDTO,
+    ListDataExportsRequestDTO,
     RequestDataExportRequestDTO,
     GenerateDataExportRequestDTO,
     DownloadDataExportRequestDTO
+)
+from .tax import (
+    RefundProjectionDTO,
+    TaxDeductionEntryDTO,
+    TaxDeductionSummaryDTO,
+    RefundProjectionRequestDTO,
+    ListTaxDeductionsRequestDTO,
+    TaxConsolidationCandidateDTO,
+    PersistTaxDeductionsRequestDTO,
+    TaxConsolidationSweepResultDTO,
+    StaleTaxConsolidationRequestDTO,
+    RecalculateTaxDeductionsRequestDTO
 )
 
 
@@ -179,8 +193,10 @@ __all__ = [
     "SerializedExportDTO",
     "DataExportResultDTO",
     "DataExportContentDTO",
+    "DataExportHistoryDTO",
     "GetDataExportRequestDTO",
     "ExportPackageRequestDTO",
+    "ListDataExportsRequestDTO",
     "RequestDataExportRequestDTO",
     "GenerateDataExportRequestDTO",
     "DownloadDataExportRequestDTO",
@@ -188,5 +204,29 @@ __all__ = [
     # Erasure
     "ErasedAccountDTO",
     "EraseAccountRequestDTO",
-    "AccountErasureResultDTO"
+    "AccountErasureResultDTO",
+
+    # Goals
+    "GoalPageDTO",
+    "GoalViabilityDTO",
+    "GetGoalRequestDTO",
+    "ListGoalsRequestDTO",
+    "CreateGoalRequestDTO",
+    "DeleteGoalRequestDTO",
+    "UpdateGoalRequestDTO",
+    "PersistGoalRequestDTO",
+    "GoalViabilityRequestDTO",
+    "SavingsCapacityRequestDTO",
+
+    # Tax
+    "RefundProjectionDTO",
+    "TaxDeductionEntryDTO",
+    "TaxDeductionSummaryDTO",
+    "RefundProjectionRequestDTO",
+    "ListTaxDeductionsRequestDTO",
+    "TaxConsolidationCandidateDTO",
+    "PersistTaxDeductionsRequestDTO",
+    "TaxConsolidationSweepResultDTO",
+    "StaleTaxConsolidationRequestDTO",
+    "RecalculateTaxDeductionsRequestDTO"
 ]

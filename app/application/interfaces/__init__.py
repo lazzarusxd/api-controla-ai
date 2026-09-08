@@ -1,6 +1,7 @@
 from .i_job_queue import IJobQueue
 from .i_ocr_engine import IOcrEngine
 from .i_secret_hasher import ISecretHasher
+from .i_export_lister import IExportLister
 from .i_export_purger import IExportPurger
 from .i_export_storage import IExportStorage
 from .i_goal_repository import IGoalRepository
@@ -23,6 +24,7 @@ from .i_credential_repository import ICredentialRepository
 from .i_transaction_repository import ITransactionRepository
 from .i_subscription_repository import ISubscriptionRepository
 from .i_refresh_token_repository import IRefreshTokenRepository
+from .i_tax_deduction_repository import ITaxDeductionRepository
 from .i_partner_webhook_repository import IPartnerWebhookRepository
 from .i_assistant_message_repository import IAssistantMessageRepository
 from .i_subscription_notification_repository import ISubscriptionNotificationRepository
@@ -32,6 +34,7 @@ __all__ = [
     "IJobQueue",
     "IOcrEngine",
     "ISecretHasher",
+    "IExportLister",
     "IExportPurger",
     "IExportStorage",
     "IGoalRepository",
@@ -52,6 +55,7 @@ __all__ = [
     "IEmbeddingRepository",
     "ICredentialRepository",
     "ITransactionRepository",
+    "ITaxDeductionRepository",
     "ISubscriptionRepository",
     "IRefreshTokenRepository",
     "IPartnerWebhookRepository",

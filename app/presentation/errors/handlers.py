@@ -67,6 +67,12 @@ from app.domain.exceptions.erasure_exceptions import (
     ErasureNotConfirmedError,
     InvalidErasureManifestError
 )
+from app.domain.exceptions.tax_exceptions import (
+    TaxError,
+    TaxOwnerNotFoundError,
+    InvalidFiscalYearError,
+    TaxableIncomeUnavailableError
+)
 
 
 PROBLEM_JSON = "application/problem+json"
@@ -132,6 +138,12 @@ _EXPORT_PROBLEM: Dict[type, Tuple[int, str]] = {
     EmptyExportScopeError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Escopo de exportação vazio."),
     ExportGenerationFailedError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Geração da exportação falhou."),
     UnsupportedExportFormatError: (status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Formato de exportação não suportado.")
+}
+
+_TAX_PROBLEM: Dict[type, Tuple[int, str]] = {
+    TaxOwnerNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado."),
+    InvalidFiscalYearError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Exercício fiscal inválido."),
+    TaxableIncomeUnavailableError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Renda tributável indisponível.")
 }
 
 _ERASURE_PROBLEM: Dict[type, Tuple[int, str]] = {
@@ -225,6 +237,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AssistantError)
     async def _assistant_error(request: Request, exc: AssistantError) -> JSONResponse:
         status_code, title = _ASSISTANT_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
+        )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
+
+    @app.exception_handler(TaxError)
+    async def _tax_error(request: Request, exc: TaxError) -> JSONResponse:
+        status_code, title = _TAX_PROBLEM.get(
             type(exc),
             (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
         )
