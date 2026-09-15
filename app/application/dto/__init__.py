@@ -1,4 +1,5 @@
 from .analytics import ExpenseOffendersDTO, ExpenseOffendersRequestDTO
+from .simulation import PurchaseScenarioDTO, SimulatePurchaseScenarioRequestDTO
 from .erasure import AccountErasureResultDTO, ErasedAccountDTO, EraseAccountRequestDTO
 from .authentication import TokenPairDTO, RefreshSessionRequestDTO, ClientCredentialsRequestDTO
 from .transaction import (
@@ -228,5 +229,9 @@ __all__ = [
     "PersistTaxDeductionsRequestDTO",
     "TaxConsolidationSweepResultDTO",
     "StaleTaxConsolidationRequestDTO",
-    "RecalculateTaxDeductionsRequestDTO"
+    "RecalculateTaxDeductionsRequestDTO",
+
+    # Simulation
+    "PurchaseScenarioDTO",
+    "SimulatePurchaseScenarioRequestDTO"
 ]

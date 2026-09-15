@@ -10,6 +10,7 @@ from app.presentation.api.v1.partners.router import router as partners_router
 from app.presentation.api.v1.receipts.router import router as receipts_router
 from app.presentation.api.v1.assistant.router import router as assistant_router
 from app.presentation.api.v1.analytics.router import router as analytics_router
+from app.presentation.api.v1.simulations.router import router as simulations_router
 from app.presentation.api.v1.transactions.router import router as transactions_router
 from app.presentation.api.v1.subscriptions.router import router as subscriptions_router
 from app.presentation.api.v1.authentication.router import router as authentication_router
@@ -42,3 +43,5 @@ router.include_router(exports_router, prefix="/v1")
 router.include_router(accounts_router, prefix="/v1")
 
 router.include_router(tax_router, prefix="/v1")
+
+router.include_router(simulations_router, prefix="/v1")

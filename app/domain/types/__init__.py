@@ -2,6 +2,7 @@ from .asset import AssetType
 from .webhook import WebhookEvent
 from .erasure import ErasedResource
 from .subscription import SubscriptionEvent
+from .simulation import PurchaseRecommendation
 from .oauth import OAuthErrorCode, TokenType, GrantType
 from .tax import TaxableIncomeSource, TaxDeductionCategory
 from .transaction import TransactionType, TransactionStatus
@@ -49,5 +50,8 @@ __all__ = [
 
     # Tax
     "TaxableIncomeSource",
-    "TaxDeductionCategory"
+    "TaxDeductionCategory",
+
+    # Simulation
+    "PurchaseRecommendation"
 ]
