@@ -3,6 +3,7 @@ from .billing_cycle import BillingCycle
 from .context_chunk import ContextChunk
 from .pareto_policy import ParetoPolicy
 from .ownership_cost import OwnershipCost
+from .opportunity_cost import OpportunityCost
 from .contribution_plan import ContributionPlan
 from .retrieved_context import RetrievedContext
 from .text_normalization import normalize_label
@@ -14,6 +15,7 @@ from .savings_capacity import MonthlyNetFlow, SavingsCapacity
 from .erasure_manifest import ErasedRecordCount, ErasureManifest
 from .tax_policy import ProgressiveTaxTable, TaxBracket, TaxPolicy
 from .expense_ranking import CategoryVolume, ExpenseRanking, RankedCategory
+from .purchase_scenario import InstallmentFlow, InstallmentTerms, PurchaseScenario
 from .extraction_confidence import ExtractionConfidence, ExtractionConfidenceWeights
 from .deduction_summary import CategoryDeduction, DeductionSummary, RefundProjection
 
@@ -67,6 +69,12 @@ __all__ = [
     "DeductionSummary",
     "CategoryDeduction",
     "ProgressiveTaxTable",
+
+    # Simulation
+    "OpportunityCost",
+    "InstallmentFlow",
+    "InstallmentTerms",
+    "PurchaseScenario",
 
     # Compartilhado
     "normalize_label"

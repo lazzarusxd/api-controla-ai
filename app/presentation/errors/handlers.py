@@ -73,6 +73,13 @@ from app.domain.exceptions.tax_exceptions import (
     InvalidFiscalYearError,
     TaxableIncomeUnavailableError
 )
+from app.domain.exceptions.simulation_exceptions import (
+    SimulationError,
+    InvalidCashDiscountError,
+    InvalidPurchaseAmountError,
+    InvalidOpportunityRateError,
+    InvalidInstallmentTermsError
+)
 
 
 PROBLEM_JSON = "application/problem+json"
@@ -144,6 +151,13 @@ _TAX_PROBLEM: Dict[type, Tuple[int, str]] = {
     TaxOwnerNotFoundError: (status.HTTP_404_NOT_FOUND, "Usuário não encontrado."),
     InvalidFiscalYearError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Exercício fiscal inválido."),
     TaxableIncomeUnavailableError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Renda tributável indisponível.")
+}
+
+_SIMULATION_PROBLEM: Dict[type, Tuple[int, str]] = {
+    InvalidPurchaseAmountError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Valor do bem inválido."),
+    InvalidCashDiscountError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Desconto à vista inválido."),
+    InvalidInstallmentTermsError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Condição de parcelamento inválida."),
+    InvalidOpportunityRateError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Taxa de custo de oportunidade inválida.")
 }
 
 _ERASURE_PROBLEM: Dict[type, Tuple[int, str]] = {
@@ -246,6 +260,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(TaxError)
     async def _tax_error(request: Request, exc: TaxError) -> JSONResponse:
         status_code, title = _TAX_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
+        )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
+
+    @app.exception_handler(SimulationError)
+    async def _simulation_error(request: Request, exc: SimulationError) -> JSONResponse:
+        status_code, title = _SIMULATION_PROBLEM.get(
             type(exc),
             (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
         )
