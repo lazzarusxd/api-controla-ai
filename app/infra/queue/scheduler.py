@@ -8,16 +8,19 @@ from app.infra.cache.redis_client import RedisClient
 from app.infra.database.postgres import PostgresPool
 from app.infra.queue.settings import build_redis_settings
 from app.config.logging_setup import configure_logging, logger
+from app.infra.queue.tasks.close_invoices import close_invoices
+from app.infra.queue.tasks.consolidate_usage import consolidate_usage
 from app.infra.queue.tasks.index_pending_context import index_pending_context
 from app.infra.queue.tasks.notify_due_subscriptions import notify_due_subscriptions
 from app.infra.queue.tasks.consolidate_tax_deductions import consolidate_tax_deductions
 
 
 def _build_cron_jobs() -> List[Any]:
-    """Janelas periódicas do agendador, derivadas das settings de cada módulo."""
     settings = get_settings()
 
     step = max(1, min(settings.RAG_INDEX_CRON_MINUTES, 60))
+
+    metering_step = max(1, min(settings.METERING_FLUSH_CRON_MINUTES, 60))
 
     return [
         cron(
@@ -37,6 +40,19 @@ def _build_cron_jobs() -> List[Any]:
             cast(WorkerCoroutine, consolidate_tax_deductions),
             hour={settings.TAX_CONSOLIDATION_CRON_HOUR},
             minute={0},
+            run_at_startup=False,
+            unique=True
+        ),
+        cron(
+            cast(WorkerCoroutine, consolidate_usage),
+            minute=set(range(0, 60, metering_step)),
+            run_at_startup=True,
+            unique=True
+        ),
+        cron(
+            cast(WorkerCoroutine, close_invoices),
+            hour={settings.BILLING_INVOICE_CLOSE_CRON_HOUR},
+            minute={30},
             run_at_startup=False,
             unique=True
         )

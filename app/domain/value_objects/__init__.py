@@ -1,13 +1,16 @@
 from .goal_policy import GoalPolicy
+from .usage_volume import UsageVolume
 from .billing_cycle import BillingCycle
 from .context_chunk import ContextChunk
 from .pareto_policy import ParetoPolicy
 from .ownership_cost import OwnershipCost
+from .reference_month import ReferenceMonth
 from .opportunity_cost import OpportunityCost
 from .contribution_plan import ContributionPlan
 from .retrieved_context import RetrievedContext
 from .text_normalization import normalize_label
 from .depreciation_policy import DepreciationPolicy
+from .pricing_plan import InvoiceCharges, PricingPlan
 from .consolidated_balance import ConsolidatedBalance
 from .export_scope import ExportArtifact, ExportScope
 from .authenticated_partner import AuthenticatedPartner
@@ -75,6 +78,12 @@ __all__ = [
     "InstallmentFlow",
     "InstallmentTerms",
     "PurchaseScenario",
+
+    # Billing
+    "PricingPlan",
+    "UsageVolume",
+    "InvoiceCharges",
+    "ReferenceMonth",
 
     # Compartilhado
     "normalize_label"

@@ -1,12 +1,14 @@
 import json
 from datetime import date
 from decimal import Decimal
-from typing import Any, Dict, Final
+from typing import Any, Dict, Final, Optional
 
 import httpx
 
 from app.config.logging_setup import logger
 from app.application.interfaces import IReceiptExtractor
+from app.application.services.usage_meter import UsageMeter
+from app.infra.providers.token_usage import report_token_usage
 from app.domain.types import TransactionStatus, TransactionType
 from app.application.dto import ExtractedTransactionDTO, OcrExtractionDTO
 from app.domain.exceptions.receipt_exceptions import ReceiptExtractionError
@@ -82,9 +84,17 @@ _RESPONSE_SCHEMA: Final[Dict[str, Any]] = {
 
 class OpenAiReceiptExtractor(IReceiptExtractor):
 
-    def __init__(self, api_key: str, model: str, base_url: str, timeout_seconds: int) -> None:
+    def __init__(
+            self,
+            model: str,
+            api_key: str,
+            base_url: str,
+            timeout_seconds: int,
+            usage_meter: Optional[UsageMeter] = None
+    ) -> None:
         self._model = model
         self._api_key = api_key
+        self._usage_meter = usage_meter
         self._base_url = base_url.rstrip("/")
         self._timeout_seconds = timeout_seconds
 
@@ -125,6 +135,8 @@ class OpenAiReceiptExtractor(IReceiptExtractor):
             logger.warning("llm_request_failed", error=type(exc).__name__)
 
             raise ReceiptExtractionError("Provedor de linguagem indisponível para estruturar o comprovante.") from exc
+
+        await report_token_usage(body=body, usage_meter=self._usage_meter)
 
         return self._to_dto(body=body)
 

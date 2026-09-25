@@ -4,6 +4,7 @@ from app.presentation.api.v1.tax.router import router as tax_router
 from app.presentation.api.v1.goals.router import router as goals_router
 from app.presentation.api.v1.health.router import router as health_router
 from app.presentation.api.v1.assets.router import router as assets_router
+from app.presentation.api.v1.billing.router import router as billing_router
 from app.presentation.api.v1.exports.router import router as exports_router
 from app.presentation.api.v1.accounts.router import router as accounts_router
 from app.presentation.api.v1.partners.router import router as partners_router
@@ -45,3 +46,5 @@ router.include_router(accounts_router, prefix="/v1")
 router.include_router(tax_router, prefix="/v1")
 
 router.include_router(simulations_router, prefix="/v1")
+
+router.include_router(billing_router, prefix="/v1")

@@ -3,18 +3,25 @@ from typing import Any, Dict, Optional
 
 from app.config.logging_setup import logger
 from app.config.settings import ServiceSettings
+from app.infra.cache.redis_client import RedisClient
 from app.infra.database.postgres import PostgresPool
 from app.application.dto import IndexUserContextRequestDTO
+from app.application.services.usage_meter import UsageMeter
+from app.infra.queue.tasks.metering import build_usage_meter
 from app.infra.repositories.embedding_repository import EmbeddingRepository
 from app.infra.providers.openai_embedding_provider import OpenAiEmbeddingProvider
 from app.application.services.context_indexing_service import ContextIndexingService
 
 
-def build_indexing_service(postgres: PostgresPool, settings: ServiceSettings) -> ContextIndexingService:
-    """Composição do serviço de indexação. Compartilhada entre o job sob demanda e a varredura."""
+def build_indexing_service(
+        postgres: PostgresPool,
+        settings: ServiceSettings,
+        usage_meter: Optional[UsageMeter] = None
+) -> ContextIndexingService:
     return ContextIndexingService(
         embedding_repository=EmbeddingRepository(postgres),
         embedding_provider=OpenAiEmbeddingProvider(
+            usage_meter=usage_meter,
             model=settings.EMBEDDING_MODEL,
             base_url=settings.LLM_BASE_URL,
             dimensions=settings.EMBEDDING_DIMENSIONS,
@@ -25,12 +32,17 @@ def build_indexing_service(postgres: PostgresPool, settings: ServiceSettings) ->
 
 
 async def index_user_context(ctx: Dict[str, Any], partner_id: str, user_id: str) -> int:
+    redis: RedisClient = ctx.get("redis")
     postgres: PostgresPool = ctx.get("postgres")
     settings: ServiceSettings = ctx.get("settings")
 
     scoped_user: Optional[UUID] = UUID(user_id) if user_id else None
 
-    indexing_service = build_indexing_service(postgres=postgres, settings=settings)
+    indexing_service = build_indexing_service(
+        postgres=postgres,
+        settings=settings,
+        usage_meter=build_usage_meter(postgres=postgres, redis=redis, partner_id=UUID(partner_id))
+    )
 
     result = await indexing_service.index(
         index_user_context_request=IndexUserContextRequestDTO(

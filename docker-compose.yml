@@ -53,7 +53,7 @@ services:
       --appendonly yes
       --appendfsync everysec
       --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
+      --maxmemory-policy volatile-lru
     volumes:
       - redis-data:/data
     healthcheck:

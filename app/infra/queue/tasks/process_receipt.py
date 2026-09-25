@@ -4,8 +4,10 @@ from typing import Any, Dict
 
 from app.config.logging_setup import logger
 from app.config.settings import ServiceSettings
+from app.infra.cache.redis_client import RedisClient
 from app.infra.database.postgres import PostgresPool
 from app.application.dto import ProcessReceiptRequestDTO
+from app.infra.queue.tasks.metering import build_usage_meter
 from app.infra.storage.local_receipt_storage import LocalReceiptStorage
 from app.infra.repositories.receipt_repository import ReceiptRepository
 from app.infra.providers.tesseract_ocr_engine import TesseractOcrEngine
@@ -18,16 +20,20 @@ from app.application.services.receipt_notification_service import ReceiptNotific
 
 
 async def process_receipt(ctx: Dict[str, Any], partner_id: str, user_id: str, receipt_id: str) -> str:
+    redis: RedisClient = ctx.get("redis")
     postgres: PostgresPool = ctx.get("postgres")
     settings: ServiceSettings = ctx.get("settings")
+
+    usage_meter = build_usage_meter(postgres=postgres, redis=redis, partner_id=UUID(partner_id))
 
     processing_service = ReceiptProcessingService(
         receipt_repository=ReceiptRepository(postgres),
         transaction_repository=TransactionRepository(postgres),
-        ocr_engine=TesseractOcrEngine(language=settings.OCR_LANGUAGE),
         confidence_threshold=Decimal(str(settings.OCR_CONFIDENCE_THRESHOLD)),
         receipt_storage=LocalReceiptStorage(storage_root=settings.RECEIPT_STORAGE_ROOT),
+        ocr_engine=TesseractOcrEngine(language=settings.OCR_LANGUAGE, usage_meter=usage_meter),
         receipt_extractor=OpenAiReceiptExtractor(
+            usage_meter=usage_meter,
             model=settings.LLM_MODEL,
             base_url=settings.LLM_BASE_URL,
             timeout_seconds=settings.LLM_TIMEOUT_SECONDS,

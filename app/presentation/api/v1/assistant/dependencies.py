@@ -3,19 +3,23 @@ from typing import Annotated
 
 from fastapi import Depends
 
+from app.application.services.usage_meter import UsageMeter
+from app.infra.cache.usage_recorder import get_usage_recorder
 from app.config.settings import ServiceSettings, get_settings
 from app.infra.queue.job_queue import ArqJobQueue, get_job_queue
 from app.infra.database.postgres import PostgresPool, get_postgres_pool
 from app.infra.repositories.embedding_repository import EmbeddingRepository
+from app.presentation.api.v1.authentication.dependencies import CurrentPartner
 from app.application.usecases.assistant.ask_assistant import AskAssistantUseCase
 from app.infra.providers.openai_embedding_provider import OpenAiEmbeddingProvider
 from app.infra.providers.openai_assistant_generator import OpenAiAssistantGenerator
 from app.application.services.context_retrieval_service import ContextRetrievalService
 from app.infra.repositories.assistant_message_repository import AssistantMessageRepository
-from app.application.usecases.assistant.request_context_indexing import RequestContextIndexingUseCase
 from app.application.usecases.assistant.list_assistant_messages import ListAssistantMessagesUseCase
+from app.application.usecases.assistant.request_context_indexing import RequestContextIndexingUseCase
 from app.application.interfaces import (
     IJobQueue,
+    IUsageRecorder,
     IEmbeddingProvider,
     IAssistantGenerator,
     IEmbeddingRepository,
@@ -33,10 +37,19 @@ def get_assistant_message_repository(
     return AssistantMessageRepository(pool)
 
 
+def get_usage_meter(
+        current_partner: CurrentPartner,
+        usage_recorder: Annotated[IUsageRecorder, Depends(get_usage_recorder)]
+) -> UsageMeter:
+    return UsageMeter(usage_recorder=usage_recorder, partner_id=current_partner.partner_id)
+
+
 def get_embedding_provider(
+        usage_meter: Annotated[UsageMeter, Depends(get_usage_meter)],
         service_settings: Annotated[ServiceSettings, Depends(get_settings)]
 ) -> IEmbeddingProvider:
     return OpenAiEmbeddingProvider(
+        usage_meter=usage_meter,
         model=service_settings.EMBEDDING_MODEL,
         base_url=service_settings.LLM_BASE_URL,
         dimensions=service_settings.EMBEDDING_DIMENSIONS,
@@ -46,9 +59,11 @@ def get_embedding_provider(
 
 
 def get_assistant_generator(
+        usage_meter: Annotated[UsageMeter, Depends(get_usage_meter)],
         service_settings: Annotated[ServiceSettings, Depends(get_settings)]
 ) -> IAssistantGenerator:
     return OpenAiAssistantGenerator(
+        usage_meter=usage_meter,
         model=service_settings.LLM_MODEL,
         base_url=service_settings.LLM_BASE_URL,
         timeout_seconds=service_settings.LLM_TIMEOUT_SECONDS,

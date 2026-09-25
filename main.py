@@ -12,8 +12,12 @@ from app.infra.database import postgres as postgres_module
 from app.config.settings import ServiceSettings, get_settings
 from app.config.logging_setup import configure_logging, logger
 from app.presentation.api.v1.router import router as api_router
+from app.infra.cache.usage_recorder import ResilientUsageRecorder
+from app.infra.cache import usage_recorder as usage_recorder_module
 from app.presentation.errors.openapi import register_default_responses
 from app.presentation.errors.handlers import register_exception_handlers
+from app.infra.repositories.metering_repository import MeteringRepository
+from app.presentation.middlewares.usage_metering import UsageMeteringMiddleware
 from app.presentation.api.v1.authentication.dependencies import bootstrap_security
 
 
@@ -32,6 +36,11 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
     queue_module.job_queue = ArqJobQueue()
 
+    usage_recorder_module.usage_recorder = ResilientUsageRecorder(
+        redis_client=redis_module.redis_client,
+        metering_repository=MeteringRepository(postgres_module.postgres_pool)
+    )
+
     bootstrap_security(service_settings)
 
     logger.info("application_started")
@@ -40,6 +49,8 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         logger.info("application_stopping")
+
+        usage_recorder_module.usage_recorder = None
 
         if redis_module.redis_client is not None:
             await redis_module.redis_client.disconnect()
@@ -76,6 +87,11 @@ def create_app() -> FastAPI:
     )
 
     register_exception_handlers(fastapi_app)
+
+    fastapi_app.add_middleware(
+        UsageMeteringMiddleware,  # type: ignore
+        recorder_provider=usage_recorder_module.find_usage_recorder
+    )
 
     fastapi_app.include_router(api_router)
 
