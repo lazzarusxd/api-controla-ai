@@ -555,6 +555,72 @@ class ServiceSettings(BaseSettings):
         examples=[15]
     )
 
+    METERING_FLUSH_CRON_MINUTES: int = Field(
+        default=5,
+        ge=1,
+        le=60,
+        description="Intervalo, em minutos, da drenagem dos contadores de consumo para o consumo diário "
+                    "consolidado. Janela curta reduz o volume exposto a uma perda do Redis; janela longa "
+                    "reduz a escrita no banco.",
+        examples=[5]
+    )
+
+    METERING_CLAIM_BATCH_SIZE: int = Field(
+        default=1000,
+        ge=1,
+        le=10000,
+        description="Lotes de consumo reivindicados por passada de drenagem.",
+        examples=[1000]
+    )
+
+    BILLING_INVOICE_CLOSE_CRON_HOUR: int = Field(
+        default=2,
+        ge=0,
+        le=23,
+        description="Hora local da rotina diária que fecha a competência anterior. Roda todo dia, e não só no "
+                    "primeiro, para recuperar uma virada de mês perdida por indisponibilidade do agendador.",
+        examples=[2]
+    )
+
+    BILLING_LIST_BASE_MONTHLY_FEE: float = Field(
+        default=499.00,
+        ge=0.0,
+        description="Taxa base mensal da tabela de balcão, aplicada ao parceiro sem contrato vigente na "
+                    "competência. Preço negociado vive na tabela tarifária do parceiro, porque contrato é "
+                    "atributo comercial de cada um, não da instância.",
+        examples=[499.00]
+    )
+
+    BILLING_LIST_PRICE_PER_THOUSAND_REQUESTS: float = Field(
+        default=2.50,
+        ge=0.0,
+        description="Preço de balcão por mil requisições autenticadas à API.",
+        examples=[2.50]
+    )
+
+    BILLING_LIST_PRICE_PER_MILLION_TOKENS_IN: float = Field(
+        default=4.00,
+        ge=0.0,
+        description="Preço de balcão por milhão de tokens de entrada processados pelos modelos de linguagem.",
+        examples=[4.00]
+    )
+
+    BILLING_LIST_PRICE_PER_MILLION_TOKENS_OUT: float = Field(
+        default=16.00,
+        ge=0.0,
+        description="Preço de balcão por milhão de tokens de saída gerados pelos modelos de linguagem. "
+                    "Separado da entrada porque os provedores também cobram os dois de forma distinta.",
+        examples=[16.00]
+    )
+
+    BILLING_LIST_PRICE_PER_OCR_IMAGE: float = Field(
+        default=0.08,
+        ge=0.0,
+        description="Preço de balcão por imagem lida pelo motor de OCR. Cada página renderizada de um PDF "
+                    "conta como uma imagem.",
+        examples=[0.08]
+    )
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

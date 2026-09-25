@@ -1,7 +1,7 @@
 import asyncio
 from io import BytesIO
 from decimal import Decimal
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Tuple
 
 import pytesseract
 from PIL import Image
@@ -10,12 +10,14 @@ from pdf2image import convert_from_bytes
 from app.config.logging_setup import logger
 from app.application.dto import OcrExtractionDTO
 from app.application.interfaces import IOcrEngine
+from app.application.services.usage_meter import UsageMeter
 
 
 class TesseractOcrEngine(IOcrEngine):
 
-    def __init__(self, language: str) -> None:
+    def __init__(self, language: str, usage_meter: Optional[UsageMeter] = None) -> None:
         self._language = language
+        self._usage_meter = usage_meter
         self._pdf_render_dpi = 200
         self._unrecognized_confidence = -1
 
@@ -23,6 +25,9 @@ class TesseractOcrEngine(IOcrEngine):
         images = await asyncio.to_thread(self._to_images, content, file_type)
 
         raw_text, confidence = await asyncio.to_thread(self._read_images, images)
+
+        if self._usage_meter is not None:
+            await self._usage_meter.record_ocr_images(images=len(images))
 
         logger.info(
             "ocr_extracted",

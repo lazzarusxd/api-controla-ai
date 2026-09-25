@@ -9,6 +9,7 @@ from .transaction import TransactionType, TransactionStatus
 from .receipt import ReceiptStatus, ReceiptEvent, ReviewDecision
 from .assistant import AssistantAnswerStatus, EmbeddingSourceType
 from .export import ExportEvent, ExportFormat, ExportSection, ExportStatus
+from .billing import BillingActor, BillingAuditEventType, InvoiceStatus, PricingSource
 
 
 __all__ = [
@@ -53,5 +54,11 @@ __all__ = [
     "TaxDeductionCategory",
 
     # Simulation
-    "PurchaseRecommendation"
+    "PurchaseRecommendation",
+
+    # Billing
+    "BillingActor",
+    "InvoiceStatus",
+    "PricingSource",
+    "BillingAuditEventType"
 ]

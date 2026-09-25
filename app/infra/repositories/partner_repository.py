@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import List
+from typing import List, Tuple
 
 from app.infra.database.postgres import PostgresPool
 from app.application.interfaces import IPartnerRepository
@@ -21,3 +21,14 @@ class PartnerRepository(IPartnerRepository):
         )
 
         return [UUID(str(record.get("partner_id"))) for record in records]
+
+    async def list_billing_candidates(self) -> List[Tuple[UUID, bool]]:
+        records = await self._pool.fetch(
+            """
+                SELECT partner_id, is_active
+                FROM partners
+                ORDER BY created_at
+            """
+        )
+
+        return [(UUID(str(record.get("partner_id"))), bool(record.get("is_active"))) for record in records]

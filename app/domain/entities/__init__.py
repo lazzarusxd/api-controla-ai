@@ -1,10 +1,12 @@
 from .goal import Goal
 from .asset import Asset
+from .invoice import Invoice
 from .partner import Partner
 from .receipt import Receipt
 from .credential import Credential
 from .data_export import DataExport
 from .transaction import Transaction
+from .metering_log import MeteringLog
 from .subscription import Subscription
 from .refresh_token import RefreshToken
 from .tax_deduction import TaxDeduction
@@ -49,5 +51,9 @@ __all__ = [
     "DataExport",
 
     # Tax
-    "TaxDeduction"
+    "TaxDeduction",
+
+    # Billing
+    "Invoice",
+    "MeteringLog"
 ]

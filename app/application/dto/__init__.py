@@ -96,6 +96,24 @@ from .export import (
     GenerateDataExportRequestDTO,
     DownloadDataExportRequestDTO
 )
+from .billing import (
+    UsageEventDTO,
+    InvoicePageDTO,
+    ClaimedUsageDTO,
+    InvoiceClosureDTO,
+    InvoiceStatementDTO,
+    GetInvoiceRequestDTO,
+    PricingPlanRequestDTO,
+    InvoiceCompositionDTO,
+    CloseInvoiceRequestDTO,
+    ListInvoicesRequestDTO,
+    MeteringMonthRequestDTO,
+    PersistInvoiceRequestDTO,
+    UsageConsolidationResultDTO,
+    InvoiceClosingSweepResultDTO,
+    UsageConsolidationRequestDTO,
+    RegisterCloseReplayRequestDTO
+)
 from .tax import (
     RefundProjectionDTO,
     TaxDeductionEntryDTO,
@@ -233,5 +251,23 @@ __all__ = [
 
     # Simulation
     "PurchaseScenarioDTO",
-    "SimulatePurchaseScenarioRequestDTO"
+    "SimulatePurchaseScenarioRequestDTO",
+
+    # Billing
+    "UsageEventDTO",
+    "InvoicePageDTO",
+    "ClaimedUsageDTO",
+    "InvoiceClosureDTO",
+    "InvoiceStatementDTO",
+    "GetInvoiceRequestDTO",
+    "PricingPlanRequestDTO",
+    "InvoiceCompositionDTO",
+    "CloseInvoiceRequestDTO",
+    "ListInvoicesRequestDTO",
+    "MeteringMonthRequestDTO",
+    "PersistInvoiceRequestDTO",
+    "UsageConsolidationResultDTO",
+    "InvoiceClosingSweepResultDTO",
+    "UsageConsolidationRequestDTO",
+    "RegisterCloseReplayRequestDTO"
 ]

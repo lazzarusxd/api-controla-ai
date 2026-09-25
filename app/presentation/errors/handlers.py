@@ -73,6 +73,12 @@ from app.domain.exceptions.tax_exceptions import (
     InvalidFiscalYearError,
     TaxableIncomeUnavailableError
 )
+from app.domain.exceptions.billing_exceptions import (
+    BillingError,
+    OpenReferenceMonthError,
+    FutureReferenceMonthError,
+    InvalidReferenceMonthError
+)
 from app.domain.exceptions.simulation_exceptions import (
     SimulationError,
     InvalidCashDiscountError,
@@ -158,6 +164,12 @@ _SIMULATION_PROBLEM: Dict[type, Tuple[int, str]] = {
     InvalidCashDiscountError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Desconto à vista inválido."),
     InvalidInstallmentTermsError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Condição de parcelamento inválida."),
     InvalidOpportunityRateError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Taxa de custo de oportunidade inválida.")
+}
+
+_BILLING_PROBLEM: Dict[type, Tuple[int, str]] = {
+    OpenReferenceMonthError: (status.HTTP_409_CONFLICT, "Competência em aberto."),
+    FutureReferenceMonthError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Competência futura."),
+    InvalidReferenceMonthError: (status.HTTP_422_UNPROCESSABLE_CONTENT, "Competência inválida.")
 }
 
 _ERASURE_PROBLEM: Dict[type, Tuple[int, str]] = {
@@ -269,6 +281,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(SimulationError)
     async def _simulation_error(request: Request, exc: SimulationError) -> JSONResponse:
         status_code, title = _SIMULATION_PROBLEM.get(
+            type(exc),
+            (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
+        )
+
+        return _problem(request=request, title=title, detail=exc.message, status_code=status_code)
+
+    @app.exception_handler(BillingError)
+    async def _billing_error(request: Request, exc: BillingError) -> JSONResponse:
+        status_code, title = _BILLING_PROBLEM.get(
             type(exc),
             (status.HTTP_422_UNPROCESSABLE_CONTENT, "Regra de negócio violada.")
         )
