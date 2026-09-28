@@ -31,7 +31,10 @@ class UsageMeteringMiddleware:
 
         async def send_wrapper(message: Message) -> None:
             if message.get("type") == "http.response.start":
-                observed["status"] = int(message.get("status"))
+                status = message.get("status")
+
+                if isinstance(status, int):
+                    observed["status"] = status
 
             await send(message)
 

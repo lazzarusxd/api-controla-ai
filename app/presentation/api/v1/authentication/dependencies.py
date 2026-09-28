@@ -1,6 +1,7 @@
 from typing import Annotated, Optional
 
 from fastapi import Depends, Request
+from fastapi.security import HTTPAuthorizationCredentials
 
 from app.infra.security.jwe_issuer import JweTokenIssuer
 from app.domain.value_objects import AuthenticatedPartner
@@ -14,6 +15,7 @@ from app.application.services.session_issuer_service import SessionIssuerService
 from app.infra.repositories.refresh_token_repository import RefreshTokenRepository
 from app.application.usecases.authentication.refresh_session import RefreshSessionUseCase
 from app.application.usecases.authentication.authenticate_client import AuthenticateClientUseCase
+from app.presentation.api.v1.authentication.security import bearer_token, oauth2_client_credentials
 from app.application.interfaces import (
     ISecretHasher,
     IAccessTokenIssuer,
@@ -104,8 +106,12 @@ def get_refresh_usecase(
 
 async def require_partner(
         request: Request,
-        token_issuer: Annotated[IAccessTokenIssuer, Depends(get_token_issuer)]
+        token_issuer: Annotated[IAccessTokenIssuer, Depends(get_token_issuer)],
+        oauth2_credentials: Annotated[Optional[str], Depends(oauth2_client_credentials)],
+        bearer_credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(bearer_token)]
 ) -> AuthenticatedPartner:
+    _ = oauth2_credentials, bearer_credentials
+
     header = request.headers.get("Authorization")
 
     if not header:

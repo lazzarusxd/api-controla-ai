@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from app.config.logging_setup import logger
 from app.config.settings import ServiceSettings
+from app.infra.queue.context import from_context
 from app.infra.database.postgres import PostgresPool
 from app.application.dto import DueSubscriptionsRequestDTO
 from app.infra.repositories.partner_repository import PartnerRepository
@@ -30,8 +31,8 @@ def build_notification_service(postgres: PostgresPool, settings: ServiceSettings
 
 async def notify_due_subscriptions(ctx: Dict[str, Any]) -> int:
     """Varredura diária dos vencimentos próximos, um parceiro por transação."""
-    postgres: PostgresPool = ctx.get("postgres")
-    settings: ServiceSettings = ctx.get("settings")
+    postgres = from_context(ctx, "postgres", PostgresPool)
+    settings = from_context(ctx, "settings", ServiceSettings)
 
     reference_date = date.today()
     partner_repository = PartnerRepository(postgres)

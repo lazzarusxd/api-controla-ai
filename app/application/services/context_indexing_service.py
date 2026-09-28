@@ -60,7 +60,7 @@ class ContextIndexingService:
     ) -> List[EmbeddingRecordDTO]:
         records: List[EmbeddingRecordDTO] = []
 
-        for transaction, text, vector in zip(transactions, texts, vectors):
+        for transaction, text, vector in zip(transactions, texts, vectors, strict=True):
             records.append(
                 EmbeddingRecordDTO(
                     vector=vector,

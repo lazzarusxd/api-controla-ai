@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 from app.config.logging_setup import logger
 from app.config.settings import ServiceSettings
+from app.infra.queue.context import from_context
 from app.infra.cache.redis_client import RedisClient
 from app.infra.database.postgres import PostgresPool
 from app.application.dto import ProcessReceiptRequestDTO
@@ -20,9 +21,9 @@ from app.application.services.receipt_notification_service import ReceiptNotific
 
 
 async def process_receipt(ctx: Dict[str, Any], partner_id: str, user_id: str, receipt_id: str) -> str:
-    redis: RedisClient = ctx.get("redis")
-    postgres: PostgresPool = ctx.get("postgres")
-    settings: ServiceSettings = ctx.get("settings")
+    redis = from_context(ctx, "redis", RedisClient)
+    postgres = from_context(ctx, "postgres", PostgresPool)
+    settings = from_context(ctx, "settings", ServiceSettings)
 
     usage_meter = build_usage_meter(postgres=postgres, redis=redis, partner_id=UUID(partner_id))
 

@@ -1,6 +1,6 @@
 from datetime import date
 from uuid import UUID, uuid4
-from typing import Dict, Final, List, Optional, Tuple
+from typing import Any, Awaitable, Dict, Final, List, Optional, Tuple, cast
 
 from app.config.logging_setup import logger
 from app.domain.value_objects import UsageVolume
@@ -89,7 +89,9 @@ class RedisUsageBuffer(IUsageBuffer):
     async def claim(self, usage_consolidation_request: UsageConsolidationRequestDTO) -> List[ClaimedUsageDTO]:
         claims = await self._recover_inflight(usage_consolidation_request=usage_consolidation_request)
 
-        members = sorted(await self._redis_client.metering.smembers(DIRTY_SET_KEY))
+        members = sorted(
+            await cast(Awaitable[Any], self._redis_client.metering.smembers(DIRTY_SET_KEY))
+        )
 
         for key in members:
             if len(claims) >= usage_consolidation_request.batch_size:
@@ -98,7 +100,7 @@ class RedisUsageBuffer(IUsageBuffer):
             parsed = parse_usage_key(key)
 
             if parsed is None:
-                await self._redis_client.metering.srem(DIRTY_SET_KEY, key)
+                await cast(Awaitable[Any], self._redis_client.metering.srem(DIRTY_SET_KEY, key))
                 continue
 
             partner_id, day = parsed
@@ -109,12 +111,15 @@ class RedisUsageBuffer(IUsageBuffer):
             claim_id = uuid4()
             target = inflight_key(partner_id=partner_id, day=day, claim_id=claim_id)
 
-            raw = await self._redis_client.metering.eval(
-                _CLAIM_SCRIPT,
-                3,
-                DIRTY_SET_KEY,
-                key,
-                target
+            raw = await cast(
+                Awaitable[Any],
+                self._redis_client.metering.eval(
+                    _CLAIM_SCRIPT,
+                    3,
+                    DIRTY_SET_KEY,
+                    key,
+                    target
+                )
             )
 
             counters = _flat_to_counters(list(raw or []))
@@ -159,7 +164,7 @@ class RedisUsageBuffer(IUsageBuffer):
             if not self._in_scope(partner_id=partner_id, usage_consolidation_request=usage_consolidation_request):
                 continue
 
-            counters = await self._redis_client.metering.hgetall(key)
+            counters = await cast(Awaitable[Any], self._redis_client.metering.hgetall(key))
 
             if not counters:
                 continue

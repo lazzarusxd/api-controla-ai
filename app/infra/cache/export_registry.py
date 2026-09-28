@@ -1,7 +1,7 @@
 import json
 from uuid import UUID
 from datetime import date, datetime, timezone
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 from app.domain.entities import DataExport
 from app.config.logging_setup import logger
@@ -10,6 +10,9 @@ from app.domain.value_objects import ExportArtifact, ExportScope
 from app.domain.types import ExportFormat, ExportSection, ExportStatus
 from app.application.dto import GetDataExportRequestDTO, ListDataExportsRequestDTO
 from app.application.interfaces import IExportLister, IExportPurger, IExportRegistry
+
+
+T = TypeVar("T")
 
 
 class RedisExportRegistry(IExportRegistry, IExportPurger, IExportLister):
@@ -36,7 +39,7 @@ class RedisExportRegistry(IExportRegistry, IExportPurger, IExportLister):
         if raw is None:
             return None
 
-        return self._to_entity(payload=json.loads(raw))
+        return self._to_entity_or_none(raw=raw, key=str(get_data_export_request.export_id))
 
     async def save(self, data_export: DataExport) -> DataExport:
         remaining = int((data_export.expires_at - datetime.now(timezone.utc)).total_seconds())
@@ -70,7 +73,10 @@ class RedisExportRegistry(IExportRegistry, IExportPurger, IExportLister):
             if raw is None:
                 continue
 
-            data_export = self._to_entity(payload=json.loads(raw))
+            data_export = self._to_entity_or_none(raw=raw, key=key)
+
+            if data_export is None:
+                continue
 
             if list_data_exports_request.status is not None:
                 if data_export.status is not list_data_exports_request.status:
@@ -94,10 +100,10 @@ class RedisExportRegistry(IExportRegistry, IExportPurger, IExportLister):
             raw = await self._redis_client.cache.get(key)
 
             if raw is not None:
-                artifact = self._to_entity(payload=json.loads(raw)).artifact
+                data_export = self._to_entity_or_none(raw=raw, key=key)
 
-                if artifact is not None:
-                    file_paths.append(artifact.file_path)
+                if data_export is not None and data_export.artifact is not None:
+                    file_paths.append(data_export.artifact.file_path)
 
             await self._redis_client.cache.delete(key)
 
@@ -159,8 +165,20 @@ class RedisExportRegistry(IExportRegistry, IExportPurger, IExportLister):
             }
         }
 
-    @staticmethod
-    def _to_entity(payload: Dict[str, Any]) -> DataExport:
+    def _to_entity_or_none(self, raw: str, key: str) -> Optional[DataExport]:
+        """Converte o registro do armazenamento temporário, tratando conteúdo ilegível como ausente."""
+        _ = self
+
+        try:
+            return self._to_entity(payload=json.loads(raw))
+
+        except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            logger.warning("data_export_state_unreadable", key=key, error=type(exc).__name__)
+
+            return None
+
+    @classmethod
+    def _to_entity(cls, payload: Dict[str, Any]) -> DataExport:
         completed_at: Optional[str] = payload.get("completed_at")
         scope_payload: Dict[str, Any] = payload.get("scope") or {}
         artifact_payload: Optional[Dict[str, Any]] = payload.get("artifact")
@@ -178,22 +196,32 @@ class RedisExportRegistry(IExportRegistry, IExportPurger, IExportLister):
 
         return DataExport(
             scope=scope,
-            user_id=UUID(payload.get("user_id")),
-            export_id=UUID(payload.get("export_id")),
-            partner_id=UUID(payload.get("partner_id")),
-            status=ExportStatus(payload.get("status")),
             failure_reason=payload.get("failure_reason"),
-            export_format=ExportFormat(payload.get("export_format")),
-            expires_at=datetime.fromisoformat(payload.get("expires_at")),
-            requested_at=datetime.fromisoformat(payload.get("requested_at")),
+            user_id=UUID(cls._required(payload=payload, field="user_id", expected=str)),
+            export_id=UUID(cls._required(payload=payload, field="export_id", expected=str)),
+            partner_id=UUID(cls._required(payload=payload, field="partner_id", expected=str)),
+            status=ExportStatus(cls._required(payload=payload, field="status", expected=str)),
             completed_at=datetime.fromisoformat(completed_at) if completed_at is not None else None,
+            export_format=ExportFormat(cls._required(payload=payload, field="export_format", expected=str)),
+            expires_at=datetime.fromisoformat(cls._required(payload=payload, field="expires_at", expected=str)),
+            requested_at=datetime.fromisoformat(cls._required(payload=payload, field="requested_at", expected=str)),
             artifact=None if artifact_payload is None else ExportArtifact(
-                checksum=artifact_payload.get("checksum"),
-                file_path=artifact_payload.get("file_path"),
-                file_name=artifact_payload.get("file_name"),
-                byte_size=artifact_payload.get("byte_size"),
-                truncated=artifact_payload.get("truncated"),
-                media_type=artifact_payload.get("media_type"),
-                total_records=artifact_payload.get("total_records")
+                checksum=cls._required(payload=artifact_payload, field="checksum", expected=str),
+                file_path=cls._required(payload=artifact_payload, field="file_path", expected=str),
+                file_name=cls._required(payload=artifact_payload, field="file_name", expected=str),
+                byte_size=cls._required(payload=artifact_payload, field="byte_size", expected=int),
+                truncated=cls._required(payload=artifact_payload, field="truncated", expected=bool),
+                media_type=cls._required(payload=artifact_payload, field="media_type", expected=str),
+                total_records=cls._required(payload=artifact_payload, field="total_records", expected=int)
             )
         )
+
+    @staticmethod
+    def _required(payload: Dict[str, Any], field: str, expected: Type[T]) -> T:
+        """Extrai um campo obrigatório já no tipo esperado, recusando ausência e tipo divergente."""
+        value = payload.get(field)
+
+        if not isinstance(value, expected) or isinstance(value, bool) is not (expected is bool):
+            raise ValueError(f"Campo '{field}' ausente ou de tipo inesperado no estado da exportação.")
+
+        return value

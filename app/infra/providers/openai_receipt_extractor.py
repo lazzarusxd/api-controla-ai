@@ -14,6 +14,16 @@ from app.application.dto import ExtractedTransactionDTO, OcrExtractionDTO
 from app.domain.exceptions.receipt_exceptions import ReceiptExtractionError
 
 
+def _required_text(extracted: Dict[str, Any], field: str) -> str:
+    """Exige campo textual presente na resposta estruturada do provedor."""
+    value = extracted.get(field)
+
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"Campo '{field}' ausente na estruturação do comprovante.")
+
+    return value
+
+
 _SYSTEM_PROMPT: Final[str] = (
     "Você estrutura comprovantes financeiros brasileiros a partir de texto extraído por OCR. "
     "Considere apenas o que está no texto: nunca invente valor, data ou estabelecimento. "
@@ -152,13 +162,15 @@ class OpenAiReceiptExtractor(IReceiptExtractor):
 
             return ExtractedTransactionDTO(
                 status=status,
-                category=extracted.get("category"),
-                description=extracted.get("description"),
                 type=TransactionType(extracted.get("type")),
                 amount=Decimal(str(extracted.get("amount"))),
                 confidence=Decimal(str(extracted.get("confidence"))),
                 due_date=date.fromisoformat(due_date) if due_date else None,
-                transaction_date=date.fromisoformat(extracted.get("transaction_date"))
+                category=_required_text(extracted=extracted, field="category"),
+                description=_required_text(extracted=extracted, field="description"),
+                transaction_date=date.fromisoformat(
+                    _required_text(extracted=extracted, field="transaction_date")
+                )
             )
 
         except (AttributeError, IndexError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:

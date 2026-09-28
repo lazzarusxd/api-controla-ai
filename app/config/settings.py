@@ -687,6 +687,7 @@ class ServiceSettings(BaseSettings):
         return self.APP_ENV == "production"
 
 
+# noinspection PyArgumentList
 @lru_cache(maxsize=1)
 def get_settings() -> ServiceSettings:
-    return ServiceSettings()  # type: ignore
+    return ServiceSettings()

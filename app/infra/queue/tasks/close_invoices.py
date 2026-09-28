@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 from app.config.logging_setup import logger
 from app.config.settings import ServiceSettings
+from app.infra.queue.context import from_context
 from app.infra.cache.redis_client import RedisClient
 from app.infra.database.postgres import PostgresPool
 from app.domain.types import BillingActor, PricingSource
@@ -35,9 +36,9 @@ def build_list_price(settings: ServiceSettings) -> PricingPlan:
 
 
 async def close_invoices(ctx: Dict[str, Any]) -> int:
-    redis: RedisClient = ctx.get("redis")
-    postgres: PostgresPool = ctx.get("postgres")
-    settings: ServiceSettings = ctx.get("settings")
+    redis = from_context(ctx, "redis", RedisClient)
+    postgres = from_context(ctx, "postgres", PostgresPool)
+    settings = from_context(ctx, "settings", ServiceSettings)
 
     reference_month = ReferenceMonth.containing(date.today()).preceding()
 
