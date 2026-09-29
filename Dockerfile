@@ -46,6 +46,9 @@ COPY --from=builder /opt/venv /opt/venv
 WORKDIR /app
 COPY --chown=${APP_UID}:${APP_GID} . .
 
+RUN mkdir -p /var/lib/controlaai/receipts /var/lib/controlaai/exports \
+    && chown -R ${APP_UID}:${APP_GID} /var/lib/controlaai
+
 USER appuser
 
 EXPOSE 8000
