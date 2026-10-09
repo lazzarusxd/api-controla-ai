@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import Form
 from pydantic import BaseModel, Field
@@ -7,23 +7,23 @@ from app.domain.types import OAuthErrorCode, TokenType
 
 
 class AuthenticationFormParameters(BaseModel):
-    """Parâmetros aceitos no Form para a rota de autentição."""
+    """Parâmetros aceitos no Form para a rota de autenticação (RFC 6749 §4.4 e §6)."""
     grant_type: Annotated[
         str,
         Form(description="Fluxo de concessão: client_credentials ou refresh_token.")
-    ]
+    ] = ""
     client_secret: Annotated[
-        Optional[str],
+        str,
         Form(description="Segredo do cliente.")
-    ] = None
+    ] = ""
     refresh_token: Annotated[
-        Optional[str],
+        str,
         Form(description="Refresh token vigente.")
-    ] = None
+    ] = ""
     client_id: Annotated[
-        Optional[str],
+        str,
         Form(description="Identificador público do cliente.")
-    ] = None
+    ] = ""
 
 
 class TokenResponse(BaseModel):

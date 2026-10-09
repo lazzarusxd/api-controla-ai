@@ -47,7 +47,12 @@ class ExpenseRanking:
     ratio_precision: ClassVar[Decimal] = Decimal("0.0001")
 
     @classmethod
-    def from_volumes(cls, volumes: List[CategoryVolume], policy: ParetoPolicy, include_essential: bool) -> "ExpenseRanking":
+    def from_volumes(
+            cls,
+            policy: ParetoPolicy,
+            include_essential: bool,
+            volumes: List[CategoryVolume]
+    ) -> "ExpenseRanking":
         """Separa o essencial do variável antes de ranquear: a exclusão é anterior ao corte de Pareto."""
         if include_essential:
             return cls(policy=policy, volumes=tuple(volumes), essential_volumes=())

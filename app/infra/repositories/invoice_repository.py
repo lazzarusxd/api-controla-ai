@@ -41,7 +41,7 @@ class InvoiceRepository(IInvoiceRepository):
 
         async with self._pool.tenant_transaction(persist_invoice_request.partner_id) as connection:
             record = await connection.fetchrow(
-                f"""
+                """
                     INSERT INTO invoices (
                         partner_id,
                         reference_month,
@@ -158,7 +158,7 @@ class InvoiceRepository(IInvoiceRepository):
     async def list_closed(self, list_invoices_request: ListInvoicesRequestDTO) -> Tuple[List[Invoice], int]:
         async with self._pool.tenant_transaction(list_invoices_request.partner_id) as connection:
             records = await connection.fetch(
-                f"""
+                """
                     SELECT
                         invoice_id,
                         partner_id,
@@ -211,7 +211,7 @@ class InvoiceRepository(IInvoiceRepository):
             reference_month: ReferenceMonth
     ) -> Optional[asyncpg.Record]:
         return await connection.fetchrow(
-            f"""
+            """
                 SELECT
                     invoice_id,
                     partner_id,

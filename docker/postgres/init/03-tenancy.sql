@@ -42,7 +42,7 @@ CREATE TABLE credentials (
 );
 
 COMMENT ON COLUMN credentials.client_secret_hash IS
-    'Hash bcrypt do client_secret. O valor em claro nunca é persistido.';
+    'Hash Argon2id do client_secret. O valor em claro nunca é persistido.';
 
 CREATE INDEX ix_credentials_partner ON credentials (partner_id);
 

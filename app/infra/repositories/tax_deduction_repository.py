@@ -24,7 +24,7 @@ class TaxDeductionRepository(ITaxDeductionRepository):
     async def list_by_year(self, list_tax_deductions_request: ListTaxDeductionsRequestDTO) -> List[TaxDeduction]:
         async with self._pool.tenant_transaction(list_tax_deductions_request.partner_id) as connection:
             records = await connection.fetch(
-                f"""
+                """
                     SELECT
                         deduction_id,
                         partner_id,
@@ -104,7 +104,7 @@ class TaxDeductionRepository(ITaxDeductionRepository):
                     )
 
                 records = await connection.fetch(
-                    f"""
+                    """
                         SELECT
                             deduction_id,
                             partner_id,

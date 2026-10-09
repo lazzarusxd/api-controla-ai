@@ -160,6 +160,7 @@ async def test_balance_usecase_returns_both_regimes() -> None:
             pending_expense=Decimal("250.00")
         )
     )
+    # noinspection PyTypeChecker
     usecase = GetConsolidatedBalanceUseCase(transaction_repository=repository)
 
     result = await usecase.execute(
@@ -174,6 +175,7 @@ async def test_balance_usecase_returns_both_regimes() -> None:
 
 
 async def test_balance_usecase_rejects_inverted_period() -> None:
+    # noinspection PyTypeChecker
     usecase = GetConsolidatedBalanceUseCase(transaction_repository=FakeTransactionRepository())
 
     with pytest.raises(InvalidPeriodError):
@@ -188,6 +190,7 @@ async def test_balance_usecase_rejects_inverted_period() -> None:
 
 
 async def test_create_returns_persisted_transaction() -> None:
+    # noinspection PyTypeChecker
     usecase = CreateTransactionUseCase(transaction_repository=FakeTransactionRepository())
 
     transaction = await usecase.execute(
@@ -208,6 +211,7 @@ async def test_create_returns_persisted_transaction() -> None:
 
 
 async def test_get_raises_when_transaction_is_out_of_scope() -> None:
+    # noinspection PyTypeChecker
     usecase = GetTransactionUseCase(transaction_repository=FakeTransactionRepository(stored=None))
 
     with pytest.raises(TransactionNotFoundError):
@@ -222,6 +226,7 @@ async def test_get_raises_when_transaction_is_out_of_scope() -> None:
 
 async def test_update_rejects_canceled_transaction() -> None:
     canceled = build_transaction(transaction_status=TransactionStatus.CANCELED)
+    # noinspection PyTypeChecker
     usecase = UpdateTransactionUseCase(transaction_repository=FakeTransactionRepository(stored=canceled))
 
     with pytest.raises(TransactionNotEditableError):
@@ -239,6 +244,7 @@ async def test_update_rejects_canceled_transaction() -> None:
 async def test_update_applies_partial_change() -> None:
     current = build_transaction()
     updated = build_transaction(amount="250.00")
+    # noinspection PyTypeChecker
     usecase = UpdateTransactionUseCase(
         transaction_repository=FakeTransactionRepository(
             stored=current,
@@ -285,6 +291,7 @@ def test_explicit_null_is_marked_for_update() -> None:
 
 
 async def test_delete_raises_when_nothing_removed() -> None:
+    # noinspection PyTypeChecker
     usecase = DeleteTransactionUseCase(transaction_repository=FakeTransactionRepository(delete_result=False))
 
     with pytest.raises(TransactionNotFoundError):
@@ -300,6 +307,7 @@ async def test_delete_raises_when_nothing_removed() -> None:
 async def test_list_returns_requested_window_and_total() -> None:
     listing = [build_transaction(transaction_date=date(2026, 8, day)) for day in range(1, 11)]
     repository = FakeTransactionRepository(listing=listing)
+    # noinspection PyTypeChecker
     usecase = ListTransactionsUseCase(transaction_repository=repository)
 
     result = await usecase.execute(
@@ -320,6 +328,7 @@ async def test_list_returns_requested_window_and_total() -> None:
 
 async def test_list_flags_last_page() -> None:
     listing = [build_transaction() for _ in range(4)]
+    # noinspection PyTypeChecker
     usecase = ListTransactionsUseCase(transaction_repository=FakeTransactionRepository(listing=listing))
 
     result = await usecase.execute(
@@ -336,6 +345,7 @@ async def test_list_flags_last_page() -> None:
 
 
 async def test_list_beyond_last_page_returns_empty_window() -> None:
+    # noinspection PyTypeChecker
     usecase = ListTransactionsUseCase(transaction_repository=FakeTransactionRepository(listing=[build_transaction()]))
 
     result = await usecase.execute(

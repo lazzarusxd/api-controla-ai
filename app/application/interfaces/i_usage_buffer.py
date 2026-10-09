@@ -16,3 +16,11 @@ class IUsageBuffer(Protocol):
     async def acknowledge(self, claimed_usage: ClaimedUsageDTO) -> None:
         """Descarta o lote depois que a aplicação no armazenamento definitivo foi confirmada."""
         ...
+
+    async def quarantine(self, claimed_usage: ClaimedUsageDTO) -> None:
+        """
+        Retira de circulação um lote com falha permanente (Dead Letter Channel).
+
+        O lote é preservado para auditoria e não volta a ser reivindicado.
+        """
+        ...

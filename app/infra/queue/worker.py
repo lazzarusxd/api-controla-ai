@@ -1,6 +1,7 @@
-from typing import Any, Dict, List
+from typing import Any, ClassVar, Dict, List
 
 from app.config.settings import get_settings
+from app.infra.queue.context import from_context
 from app.infra.cache.redis_client import RedisClient
 from app.infra.database.postgres import PostgresPool
 from app.infra.queue.settings import build_redis_settings
@@ -28,8 +29,8 @@ async def startup(ctx: Dict[str, Any]) -> None:
 
 
 async def shutdown(ctx: Dict[str, Any]) -> None:
-    redis: RedisClient = ctx.get("redis")
-    postgres: PostgresPool = ctx.get("postgres")
+    redis = from_context(ctx, "redis", RedisClient)
+    postgres = from_context(ctx, "postgres", PostgresPool)
 
     if redis is not None:
         await redis.disconnect()
@@ -47,4 +48,4 @@ class WorkerSettings:
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = build_redis_settings()
-    functions: List[Any] = [process_receipt, index_user_context, generate_data_export]
+    functions: ClassVar[List[Any]] = [process_receipt, index_user_context, generate_data_export]

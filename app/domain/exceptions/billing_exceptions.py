@@ -24,3 +24,9 @@ class OpenReferenceMonthError(BillingError):
             message: str = "A competência corrente ainda acumula consumo e só pode ser fechada após o seu término."
     ) -> None:
         super().__init__(message)
+
+
+class UsageOwnerNotFoundError(BillingError):
+    """Lote de consumo cujo parceiro não existe no armazenamento definitivo: falha permanente, não retentável."""
+    def __init__(self, message: str = "O parceiro dono do consumo não está cadastrado.") -> None:
+        super().__init__(message)

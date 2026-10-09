@@ -4,12 +4,12 @@ from typing import Any, List, Optional, Tuple
 
 import asyncpg
 
-from app.domain.entities import Transaction
+from app.domain.entities import Asset, Transaction
 from app.domain.value_objects import ContextChunk
 from app.infra.database.postgres import PostgresPool
 from app.application.interfaces import IEmbeddingRepository
 from app.application.dto import EmbeddingRecordDTO, VectorSearchRequestDTO
-from app.domain.types import EmbeddingSourceType, TransactionStatus, TransactionType
+from app.domain.types import AssetType, EmbeddingSourceType, TransactionStatus, TransactionType
 
 
 class EmbeddingRepository(IEmbeddingRepository):
@@ -145,6 +145,79 @@ class EmbeddingRepository(IEmbeddingRepository):
             )
 
         return [self._to_entity(record) for record in records]
+
+    async def list_stale_assets(
+            self,
+            batch_size: int,
+            partner_id: UUID,
+            user_id: Optional[UUID] = None
+    ) -> List[Asset]:
+        conditions = ["a.partner_id = $1"]
+
+        arguments: List[Any] = [partner_id]
+
+        if user_id is not None:
+            arguments.append(user_id)
+            conditions.append(f"a.user_id = ${len(arguments)}")
+
+        arguments.append(batch_size)
+        limit_placeholder = f"${len(arguments)}"
+
+        async with self._pool.tenant_transaction(partner_id) as connection:
+            records = await connection.fetch(
+                f"""
+                    SELECT
+                        a.asset_id,
+                        a.partner_id,
+                        a.user_id,
+                        a.asset_type,
+                        a.description,
+                        a.market_value,
+                        a.annual_taxes,
+                        a.acquisition_date,
+                        a.monthly_tax_provision,
+                        a.monthly_depreciation,
+                        a.total_monthly_cost,
+                        a.created_at,
+                        a.updated_at
+                    FROM assets a
+                    LEFT JOIN vector_embeddings e
+                        ON e.partner_id = a.partner_id
+                        AND e.user_id = a.user_id
+                        AND e.source_type = 'asset'
+                        AND e.source_id = a.asset_id
+                    WHERE {" AND ".join(conditions)}
+                        AND (
+                            e.embedding_id IS NULL
+                            OR e.created_at < coalesce(a.updated_at, a.created_at)
+                        )
+                    ORDER BY a.created_at
+                    LIMIT {limit_placeholder}
+                """,
+                *arguments
+            )
+
+        return [self._to_asset(record) for record in records]
+
+    @staticmethod
+    def _to_asset(record: asyncpg.Record) -> Asset:
+        depreciation = record.get("monthly_depreciation")
+
+        return Asset(
+            created_at=record.get("created_at"),
+            updated_at=record.get("updated_at"),
+            description=record.get("description"),
+            market_value=record.get("market_value"),
+            annual_taxes=record.get("annual_taxes"),
+            acquisition_date=record.get("acquisition_date"),
+            asset_type=AssetType(record.get("asset_type")),
+            user_id=UUID(str(record.get("user_id"))),
+            asset_id=UUID(str(record.get("asset_id"))),
+            partner_id=UUID(str(record.get("partner_id"))),
+            total_monthly_cost=record.get("total_monthly_cost"),
+            monthly_tax_provision=record.get("monthly_tax_provision"),
+            monthly_depreciation=depreciation if depreciation is not None else Decimal("0.00")
+        )
 
     @staticmethod
     def _to_entity(record: asyncpg.Record) -> Transaction:

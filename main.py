@@ -80,16 +80,21 @@ def create_app() -> FastAPI:
         redoc_url=None if service_settings.is_production else "/redoc",
         openapi_url=None if service_settings.is_production else "/openapi.json",
         swagger_ui_parameters={
+            "filter": True,
             "deepLinking": True,
             "docExpansion": "none",
+            "tryItOutEnabled": True,
+            "persistAuthorization": True,
+            "displayRequestDuration": True,
             "defaultModelsExpandDepth": -1
         }
     )
 
     register_exception_handlers(fastapi_app)
 
+    # noinspection PyTypeChecker
     fastapi_app.add_middleware(
-        UsageMeteringMiddleware,  # type: ignore
+        UsageMeteringMiddleware,
         recorder_provider=usage_recorder_module.find_usage_recorder
     )
 
@@ -107,7 +112,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host="0.0.0.0",
+        host="0.0.0.0",  # noqa: S104 - o processo escuta dentro do container; a exposição é do compose
         port=service_settings.APP_PORT,
         log_level=service_settings.LOG_LEVEL.lower()
     )

@@ -1,9 +1,10 @@
-from typing import Any, Dict, List, cast
+from typing import Any, ClassVar, Dict, List, cast
 
 from arq import cron
 from arq.typing import WorkerCoroutine
 
 from app.config.settings import get_settings
+from app.infra.queue.context import from_context
 from app.infra.cache.redis_client import RedisClient
 from app.infra.database.postgres import PostgresPool
 from app.infra.queue.settings import build_redis_settings
@@ -13,6 +14,10 @@ from app.infra.queue.tasks.consolidate_usage import consolidate_usage
 from app.infra.queue.tasks.index_pending_context import index_pending_context
 from app.infra.queue.tasks.notify_due_subscriptions import notify_due_subscriptions
 from app.infra.queue.tasks.consolidate_tax_deductions import consolidate_tax_deductions
+
+
+SCHEDULER_QUEUE_NAME = "arq:controla-ai:scheduler"
+"""Fila exclusiva dos crons: isola-os do worker, que consome a fila padrão (arq:queue)."""
 
 
 def _build_cron_jobs() -> List[Any]:
@@ -73,12 +78,12 @@ async def startup(ctx: Dict[str, Any]) -> None:
     ctx["settings"] = settings
     ctx["postgres"] = postgres
 
-    logger.info("scheduler_started")
+    logger.info("scheduler_started", queue_name=SCHEDULER_QUEUE_NAME)
 
 
 async def shutdown(ctx: Dict[str, Any]) -> None:
-    redis: RedisClient = ctx.get("redis")
-    postgres: PostgresPool = ctx.get("postgres")
+    redis = from_context(ctx, "redis", RedisClient)
+    postgres = from_context(ctx, "postgres", PostgresPool)
 
     if redis is not None:
         await redis.disconnect()
@@ -91,6 +96,7 @@ async def shutdown(ctx: Dict[str, Any]) -> None:
 class SchedulerSettings:
     on_startup = startup
     on_shutdown = shutdown
-    functions: List[Any] = []
-    cron_jobs: List[Any] = _build_cron_jobs()
+    queue_name = SCHEDULER_QUEUE_NAME
+    functions: ClassVar[List[Any]] = []
+    cron_jobs: ClassVar[List[Any]] = _build_cron_jobs()
     redis_settings = build_redis_settings()

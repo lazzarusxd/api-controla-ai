@@ -2,6 +2,7 @@ from typing import Any, Dict
 
 from app.config.logging_setup import logger
 from app.config.settings import ServiceSettings
+from app.infra.queue.context import from_context
 from app.infra.cache.redis_client import RedisClient
 from app.infra.database.postgres import PostgresPool
 from app.application.dto import IndexUserContextRequestDTO
@@ -11,9 +12,9 @@ from app.infra.queue.tasks.index_user_context import build_indexing_service
 
 
 async def index_pending_context(ctx: Dict[str, Any]) -> int:
-    redis: RedisClient = ctx.get("redis")
-    postgres: PostgresPool = ctx.get("postgres")
-    settings: ServiceSettings = ctx.get("settings")
+    redis = from_context(ctx, "redis", RedisClient)
+    postgres = from_context(ctx, "postgres", PostgresPool)
+    settings = from_context(ctx, "settings", ServiceSettings)
 
     partner_repository = PartnerRepository(postgres)
 

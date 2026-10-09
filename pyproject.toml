@@ -51,7 +51,7 @@ required-version = ">=0.9.0"
 
 # ─── Ruff, lint e formatação (PEP 8) ────────────────────────
 [tool.ruff]
-line-length = 88
+line-length = 120
 target-version = "py314"
 src = ["app"]
 
@@ -71,13 +71,22 @@ select = [
     "RUF",  # ruff-specific
 ]
 ignore = [
-    "S101",   # assert é legítimo em testes
-    "UP006",  # typing.List/Dict/Tuple por convenção do projeto
-    "UP035",  # idem: imports de typing não são "deprecados" aqui
+    "I001",                               # ordenação por comprimento é convenção do projeto
+    "B008",                               # Depends()/Query() em default é o idioma do FastAPI
+    "S608",                               # SQL interpola apenas identificadores, nunca valor do chamador
+    "S105",                               # "refresh_token" é nome de grant da RFC 6749, não credencial
+    "S101",                               # assert é legítimo em testes
+    "UP035",                              # idem: imports de typing não são "deprecados" aqui
+    "UP006",                              # typing.List/Dict/Tuple por convenção do projeto
+    "UP017",                              # timezone.utc é explícito e portável; o alias não agrega
+    "UP047",                              # TypeVar explícito acompanha a convenção de typing do projeto
+    "RUF022",                             # __all__ agrupado por módulo, com seções comentadas
+    "RUF005",                             # concatenação de listas é mais legível que desempacotamento aqui
+    "UP007", "UP037", "UP042", "UP045",   # typing.Optional/Union/str+Enum são convenção
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S", "T20"]
+"tests/*" = ["S", "T20", "C420", "RUF059"]
 "app/config/settings.py" = ["N815"]
 
 [tool.ruff.lint.isort]
@@ -85,6 +94,9 @@ known-first-party = ["app"]
 
 # ─── mypy, verificação estática de tipos ────────────────────
 [tool.mypy]
+mypy_path = "."
+explicit_package_bases = true
+namespace_packages = true
 python_version = "3.14"
 strict = true
 warn_unused_ignores = true
@@ -93,7 +105,7 @@ disallow_untyped_defs = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["pgvector.*", "pytesseract.*", "pdf2image.*", "reportlab.*"]
+module = ["pgvector.*", "pytesseract.*", "pdf2image.*", "reportlab.*", "asyncpg.*", "jwcrypto.*"]
 ignore_missing_imports = true
 
 # ─── pytest ──────────────────────────────────────────────────

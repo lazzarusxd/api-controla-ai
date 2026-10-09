@@ -9,7 +9,6 @@ from app.config.logging_setup import logger
 from app.config.settings import ServiceSettings
 
 
-
 class PostgresPool:
 
     def __init__(self, settings: ServiceSettings) -> None:
@@ -58,7 +57,9 @@ class PostgresPool:
 
     async def fetch(self, query: str, *args: Any) -> List[asyncpg.Record]:
         async with self.pool.acquire() as connection:
-            return await connection.fetch(query, *args)
+            records: List[asyncpg.Record] = await connection.fetch(query, *args)
+
+            return records
 
     async def fetchrow(self, query: str, *args: Any) -> Optional[asyncpg.Record]:
         async with self.pool.acquire() as connection:
@@ -70,7 +71,9 @@ class PostgresPool:
 
     async def execute(self, query: str, *args: Any) -> str:
         async with self.pool.acquire() as connection:
-            return await connection.execute(query, *args)
+            status: str = await connection.execute(query, *args)
+
+            return status
 
     async def executemany(self, query: str, args_list: List[Dict[str, Any]]) -> None:
         async with self.pool.acquire() as connection:
@@ -86,7 +89,7 @@ class PostgresPool:
     async def ping(self) -> bool:
         try:
             async with self.pool.acquire() as connection:
-                return await connection.fetchval("SELECT 1") == 1
+                return bool(await connection.fetchval("SELECT 1") == 1)
         except Exception as exc:
             logger.warning("postgres_ping_failed", error=str(exc))
             return False
