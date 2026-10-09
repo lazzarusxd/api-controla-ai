@@ -39,6 +39,7 @@ class UsageConsolidationResultDTO:
     claimed: int = 0
     applied: int = 0
     replayed: int = 0
+    quarantined: int = 0
 
 
 @dataclass(frozen=True, slots=True)

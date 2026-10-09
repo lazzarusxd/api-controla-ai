@@ -12,6 +12,7 @@ from app.application.dto import ClaimedUsageDTO, UsageConsolidationRequestDTO, U
 DIRTY_SET_KEY: Final[str] = "metering:dirty"
 USAGE_KEY_PREFIX: Final[str] = "metering:usage"
 INFLIGHT_KEY_PREFIX: Final[str] = "metering:inflight"
+DEAD_LETTER_KEY_PREFIX: Final[str] = "metering:deadletter"
 _CLAIM_SCRIPT: Final[str] = """
 if redis.call('EXISTS', KEYS[2]) == 1 then
     redis.call('RENAME', KEYS[2], KEYS[3])
@@ -28,6 +29,10 @@ def usage_key(partner_id: UUID, day: date) -> str:
 
 def inflight_key(partner_id: UUID, day: date, claim_id: UUID) -> str:
     return f"{INFLIGHT_KEY_PREFIX}:{partner_id}:{day.isoformat()}:{claim_id}"
+
+
+def dead_letter_key(partner_id: UUID, day: date, claim_id: UUID) -> str:
+    return f"{DEAD_LETTER_KEY_PREFIX}:{partner_id}:{day.isoformat()}:{claim_id}"
 
 
 def parse_usage_key(key: str) -> Optional[Tuple[UUID, date]]:
@@ -146,6 +151,22 @@ class RedisUsageBuffer(IUsageBuffer):
                 partner_id=claimed_usage.partner_id
             )
         )
+
+    async def quarantine(self, claimed_usage: ClaimedUsageDTO) -> None:
+        source = inflight_key(
+            claim_id=claimed_usage.claim_id,
+            day=claimed_usage.reference_date,
+            partner_id=claimed_usage.partner_id
+        )
+        target = dead_letter_key(
+            claim_id=claimed_usage.claim_id,
+            day=claimed_usage.reference_date,
+            partner_id=claimed_usage.partner_id
+        )
+
+        # RENAME é atômico; sem TTL, a chave fica fora do alcance do volatile-lru e preservada para auditoria.
+        if await self._redis_client.metering.exists(source):
+            await self._redis_client.metering.rename(source, target)
 
     async def _recover_inflight(
             self,

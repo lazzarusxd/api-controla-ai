@@ -1,3 +1,5 @@
+import re
+import unicodedata
 from typing import Any, Dict, Tuple
 
 from fastapi.responses import JSONResponse
@@ -90,6 +92,8 @@ from app.domain.exceptions.simulation_exceptions import (
 
 PROBLEM_JSON = "application/problem+json"
 
+PROBLEM_TYPE_BASE_URI = "https://controla.ai/problems/"
+
 _OAUTH_STATUS: Dict[OAuthErrorCode, int] = {
     OAuthErrorCode.INVALID_SCOPE: status.HTTP_400_BAD_REQUEST,
     OAuthErrorCode.INVALID_GRANT: status.HTTP_400_BAD_REQUEST,
@@ -179,10 +183,24 @@ _ERASURE_PROBLEM: Dict[type, Tuple[int, str]] = {
 }
 
 
+def _problem_slug(title: str) -> str:
+    """Deriva um identificador ASCII estável para o 'type' (RFC 9457 §3.1.1, RFC 3986)."""
+    ascii_title = unicodedata.normalize("NFKD", title).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", "-", ascii_title.lower()).strip("-")
+
+
+def _used_basic_scheme(request: Request) -> bool:
+    """Indica se o cliente se autenticou via cabeçalho Authorization com esquema Basic (RFC 7617)."""
+    authorization = request.headers.get("Authorization", "")
+    scheme, _, _ = authorization.partition(" ")
+
+    return scheme.lower() == "basic"
+
+
 def _problem(request: Request, status_code: int, title: str, detail: str, **extra: Any) -> JSONResponse:
     """Monta um corpo application/problem+json conforme RFC 9457."""
     body: Dict[str, Any] = {
-        "type": f"https://controla.ai/problems/{title}",
+        "type": f"{PROBLEM_TYPE_BASE_URI}{_problem_slug(title)}",
         "title": title,
         "status": status_code,
         "detail": detail,
@@ -196,11 +214,13 @@ def _problem(request: Request, status_code: int, title: str, detail: str, **extr
 def register_exception_handlers(app: FastAPI) -> None:
     """Registra a tradução de exceções em respostas HTTP."""
     @app.exception_handler(AuthenticationError)
-    async def _authentication_error(_request: Request, exc: AuthenticationError) -> JSONResponse:
+    async def _authentication_error(request: Request, exc: AuthenticationError) -> JSONResponse:
         status_code = _OAUTH_STATUS.get(exc.oauth_error, status.HTTP_400_BAD_REQUEST)
         headers: Dict[str, str] = {"Cache-Control": "no-store", "Pragma": "no-cache"}
 
-        if isinstance(exc, InvalidClientError):
+        # RFC 6749 §5.2: o desafio Basic só é obrigatório quando o cliente usou o cabeçalho
+        # Authorization. Com credenciais no corpo, omiti-lo evita o prompt nativo do navegador.
+        if isinstance(exc, InvalidClientError) and _used_basic_scheme(request):
             headers["WWW-Authenticate"] = 'Basic realm="controla-ai"'
 
         if isinstance(exc, InvalidTokenError):

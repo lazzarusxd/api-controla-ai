@@ -135,18 +135,18 @@ class AssetResponse(BaseModel):
         default=...,
         description="Segunda parcela do CET: a taxa mensal do tipo do bem aplicada ao valor de mercado. "
                     "Vale zero quando a natureza do bem não deprecia.",
-        examples=[1144.55]
+        examples=[1143.95]
     )
     total_monthly_cost: SignedAmount = Field(
         default=...,
         description="Custo Efetivo Total mensal. É exatamente a soma das duas parcelas acima, invariante "
                     "garantida também no banco por restrição de verificação.",
-        examples=[1372.88]
+        examples=[1372.28]
     )
     total_annual_cost: SignedAmount = Field(
         default=...,
         description="Projeção anual do CET, o custo de manter o bem por doze meses.",
-        examples=[16474.56]
+        examples=[16467.36]
     )
     age_in_months: int = Field(
         default=...,
@@ -264,12 +264,12 @@ class AssetTypeCostResponse(BaseModel):
     monthly_depreciation: SignedAmount = Field(
         default=...,
         description="Soma das depreciações mensais da natureza.",
-        examples=[1144.55]
+        examples=[1143.95]
     )
     total_monthly_cost: SignedAmount = Field(
         default=...,
         description="Soma do CET mensal da natureza.",
-        examples=[1372.88]
+        examples=[1372.28]
     )
 
     @classmethod
@@ -304,7 +304,7 @@ class AssetCostSummaryResponse(BaseModel):
     total_monthly_depreciation: SignedAmount = Field(
         default=...,
         description="Depreciação mensal de todo o patrimônio.",
-        examples=[1144.55]
+        examples=[1143.95]
     )
     total_monthly_cost: SignedAmount = Field(
         default=...,

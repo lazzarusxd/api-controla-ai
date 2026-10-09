@@ -115,6 +115,7 @@ class FakeUsageBuffer:
 
     def __init__(self, claims: Optional[List[ClaimedUsageDTO]] = None) -> None:
         self._claims = claims or []
+        self.quarantined: List[UUID] = []
         self.acknowledged: List[UUID] = []
         self.claim_calls: List[UsageConsolidationRequestDTO] = []
 
@@ -129,6 +130,9 @@ class FakeUsageBuffer:
 
     async def acknowledge(self, claimed_usage: ClaimedUsageDTO) -> None:
         self.acknowledged.append(claimed_usage.claim_id)
+
+    async def quarantine(self, claimed_usage: ClaimedUsageDTO) -> None:
+        self.quarantined.append(claimed_usage.claim_id)
 
 
 class FakePricingPlanRepository:

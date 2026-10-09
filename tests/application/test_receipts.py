@@ -502,6 +502,7 @@ async def test_upload_rejects_empty_file() -> None:
 async def test_high_confidence_creates_transaction_ready_for_balance() -> None:
     transaction_repository = FakeTransactionRepository()
     receipt_repository = FakeReceiptRepository(claimed=build_receipt())
+    # noinspection PyTypeChecker
     service = build_processing_service(
         receipt_repository=receipt_repository,
         transaction_repository=transaction_repository
@@ -521,6 +522,7 @@ async def test_high_confidence_creates_transaction_ready_for_balance() -> None:
 
 async def test_low_confidence_creates_transaction_marked_for_review() -> None:
     transaction_repository = FakeTransactionRepository()
+    # noinspection PyTypeChecker
     service = build_processing_service(
         transaction_repository=transaction_repository,
         extractor=FakeReceiptExtractor(extracted=build_extraction(confidence="0.50")),
@@ -544,6 +546,7 @@ async def test_low_confidence_creates_transaction_marked_for_review() -> None:
 async def test_illegible_text_fails_without_creating_transaction() -> None:
     transaction_repository = FakeTransactionRepository()
     receipt_repository = FakeReceiptRepository(claimed=build_receipt())
+    # noinspection PyTypeChecker
     service = build_processing_service(
         receipt_repository=receipt_repository,
         transaction_repository=transaction_repository,

@@ -16,6 +16,10 @@ from app.infra.queue.tasks.notify_due_subscriptions import notify_due_subscripti
 from app.infra.queue.tasks.consolidate_tax_deductions import consolidate_tax_deductions
 
 
+SCHEDULER_QUEUE_NAME = "arq:controla-ai:scheduler"
+"""Fila exclusiva dos crons: isola-os do worker, que consome a fila padrão (arq:queue)."""
+
+
 def _build_cron_jobs() -> List[Any]:
     settings = get_settings()
 
@@ -74,7 +78,7 @@ async def startup(ctx: Dict[str, Any]) -> None:
     ctx["settings"] = settings
     ctx["postgres"] = postgres
 
-    logger.info("scheduler_started")
+    logger.info("scheduler_started", queue_name=SCHEDULER_QUEUE_NAME)
 
 
 async def shutdown(ctx: Dict[str, Any]) -> None:
@@ -92,6 +96,7 @@ async def shutdown(ctx: Dict[str, Any]) -> None:
 class SchedulerSettings:
     on_startup = startup
     on_shutdown = shutdown
+    queue_name = SCHEDULER_QUEUE_NAME
     functions: ClassVar[List[Any]] = []
     cron_jobs: ClassVar[List[Any]] = _build_cron_jobs()
     redis_settings = build_redis_settings()

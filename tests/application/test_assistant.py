@@ -5,14 +5,20 @@ from datetime import date, datetime, timezone
 
 import pytest
 
-from app.domain.entities import AssistantMessage, Transaction
 from app.domain.value_objects import ContextChunk, RetrievedContext
+from app.domain.entities import Asset, AssistantMessage, Transaction
 from app.domain.exceptions.assistant_exceptions import EmptyQuestionError
 from app.application.usecases.assistant.ask_assistant import AskAssistantUseCase
 from app.application.services.context_indexing_service import ContextIndexingService
 from app.application.services.context_retrieval_service import ContextRetrievalService
 from app.application.usecases.assistant.list_assistant_messages import ListAssistantMessagesUseCase
-from app.domain.types import AssistantAnswerStatus, EmbeddingSourceType, TransactionStatus, TransactionType
+from app.domain.types import (
+    AssetType,
+    TransactionType,
+    TransactionStatus,
+    EmbeddingSourceType,
+    AssistantAnswerStatus
+)
 from app.application.interfaces import (
     IEmbeddingProvider,
     IAssistantGenerator,
@@ -65,6 +71,23 @@ def build_transaction(pending_review: bool = False) -> Transaction:
     )
 
 
+def build_asset() -> Asset:
+    return Asset(
+        user_id=USER_ID,
+        asset_id=uuid4(),
+        partner_id=PARTNER_ID,
+        asset_type=AssetType.VEHICLE,
+        annual_taxes=Decimal("2740.00"),
+        market_value=Decimal("68500.00"),
+        acquisition_date=date(2022, 3, 15),
+        created_at=datetime.now(timezone.utc),
+        description="Fiat Argo Drive 1.3 2022",
+        total_monthly_cost=Decimal("1372.28"),
+        monthly_depreciation=Decimal("1143.95"),
+        monthly_tax_provision=Decimal("228.33")
+    )
+
+
 class FakeEmbeddingProvider(IEmbeddingProvider):
 
     def __init__(self, vector: Optional[List[float]] = None) -> None:
@@ -82,12 +105,14 @@ class FakeEmbeddingRepository(IEmbeddingRepository):
     def __init__(
             self,
             stale: Optional[List[Transaction]] = None,
-            chunks: Optional[List[ContextChunk]] = None
+            chunks: Optional[List[ContextChunk]] = None,
+            stale_assets: Optional[List[Asset]] = None
     ) -> None:
         self.upserted: List[EmbeddingRecordDTO] = []
         self.stale = stale if stale is not None else []
         self.searches: List[VectorSearchRequestDTO] = []
         self.chunks = chunks if chunks is not None else []
+        self.stale_assets = stale_assets if stale_assets is not None else []
 
     async def search(self, vector_search_request: VectorSearchRequestDTO) -> List[ContextChunk]:
         self.searches.append(vector_search_request)
@@ -113,6 +138,16 @@ class FakeEmbeddingRepository(IEmbeddingRepository):
         _ = self, partner_id, user_id
 
         return self.stale[:batch_size]
+
+    async def list_stale_assets(
+            self,
+            batch_size: int,
+            partner_id: UUID,
+            user_id: Optional[UUID] = None
+    ) -> List[Asset]:
+        _ = self, partner_id, user_id
+
+        return self.stale_assets[:batch_size]
 
 
 class FakeAssistantGenerator(IAssistantGenerator):
@@ -328,9 +363,10 @@ async def test_rejects_blank_question() -> None:
         )
 
 
-async def test_indexes_stale_transactions_with_brazilian_narrative() -> None:
+async def test_indexes_stale_transactions_and_assets_with_brazilian_narrative() -> None:
+    asset = build_asset()
     transaction = build_transaction()
-    repository = FakeEmbeddingRepository(stale=[transaction])
+    repository = FakeEmbeddingRepository(stale=[transaction], stale_assets=[asset])
     provider = FakeEmbeddingProvider()
 
     service = ContextIndexingService(embedding_provider=provider, embedding_repository=repository)
@@ -339,11 +375,21 @@ async def test_indexes_stale_transactions_with_brazilian_narrative() -> None:
         index_user_context_request=IndexUserContextRequestDTO(partner_id=PARTNER_ID, user_id=USER_ID)
     )
 
-    assert result.indexed == 1
-    assert repository.upserted[0].source_type is EmbeddingSourceType.TRANSACTION
-    assert repository.upserted[0].source_id == transaction.transaction_id
-    assert "R$ 189,90" in repository.upserted[0].context_text
-    assert "14/08/2026" in repository.upserted[0].context_text
+    assert result.indexed == 2
+    assert len(provider.calls) == 1
+
+    transaction_record, asset_record = repository.upserted
+
+    assert transaction_record.source_type is EmbeddingSourceType.TRANSACTION
+    assert transaction_record.source_id == transaction.transaction_id
+    assert "R$ 189,90" in transaction_record.context_text
+    assert "14/08/2026" in transaction_record.context_text
+
+    assert asset_record.source_type is EmbeddingSourceType.ASSET
+    assert asset_record.source_id == asset.asset_id
+    assert "Veículo cadastrado no patrimônio: Fiat Argo Drive 1.3 2022" in asset_record.context_text
+    assert "IPVA anual de R$ 2.740,00" in asset_record.context_text
+    assert "custo mensal de manter o bem R$ 1.372,28" in asset_record.context_text
 
 
 async def test_indexing_without_candidates_does_not_call_provider() -> None:
